@@ -1,4 +1,4 @@
-"""chainguard-report: compliance PDFs for ChainGuard alerts.
+"""chainguard-report: compliance PDFs for SvlteChain alerts.
 
 chainguard-report alert <alert-id> [--engine URL] [-o report.pdf]
 chainguard-report serve [--port 8800] [--engine URL]   # GET /reports/alerts/<id>.pdf

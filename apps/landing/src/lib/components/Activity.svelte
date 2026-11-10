@@ -1,6 +1,6 @@
 <script lang="ts">
 	/**
-	 * What ChainGuard saw on mainnet. Live when an engine is reachable,
+	 * What SvlteChain saw on mainnet. Live when an engine is reachable,
 	 * otherwise the recorded run, and it says which.
 	 */
 	import { RUN } from '#lib/data/recorded.ts';
@@ -23,7 +23,7 @@
 
 <section class="activity" aria-labelledby="activity-title">
 	<div class="wrap" use:reveal>
-		<h2 id="activity-title" class="visually-hidden">ChainGuard on mainnet</h2>
+		<h2 id="activity-title" class="visually-hidden">SvlteChain on mainnet</h2>
 		<div class="figs">
 			{#each figures as f, i (f.label)}
 				<div class="fig" data-reveal data-reveal-index={i}>

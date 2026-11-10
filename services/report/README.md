@@ -1,6 +1,6 @@
 # chainguard-report
 
-Compliance-ready PDF reports for ChainGuard alerts.
+Compliance-ready PDF reports for SvlteChain alerts.
 
 A report contains:
 - the alert summary (rule, weakness class, severity, block and transactions);

@@ -14,7 +14,8 @@ import {
 import type { Core, ElementDefinition, EventObject, LayoutOptions, StylesheetJson } from 'cytoscape';
 import { Alert } from '../core/models';
 import { FLOW_BLOCKS, FlowBlock, GraphEdge, GraphNode, buildGraph, shortAddr } from '../core/state';
-import { usdCompact } from '../core/format';
+import { int, usdCompact } from '../core/format';
+import { ThemeService } from '../core/theme.service';
 
 /** Entity category → node shape. Category is never carried by color (dataviz rule). */
 const SHAPES: Record<string, { shape: string; label: string; d: string }> = {
@@ -46,15 +47,15 @@ interface Tip {
   selector: 'cg-fund-flow-graph',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="head">
+    <header class="panel-head">
       <div>
         <h2>Fund flows</h2>
-        <p class="sub">
-          Priced token transfers, last {{ blocks().length }}/{{ maxBlocks }} blocks · {{ graph().nodes.length }} addresses ·
-          {{ graph().edges.length }} flows. <span class="hot-key">Red</span> marks evidence in an open alert.
+        <p class="panel-sub">
+          Priced token transfers in the last {{ blocks().length }} of {{ maxBlocks }} blocks: {{ int(graph().nodes.length) }} addresses,
+          {{ int(graph().edges.length) }} flows. <span class="hot-key">Red</span> marks evidence in an open alert.
         </p>
       </div>
-      <button type="button" class="view" (click)="table.set(!table())" [attr.aria-pressed]="table()">
+      <button type="button" class="btn-quiet" (click)="table.set(!table())" [attr.aria-pressed]="table()">
         {{ table() ? 'Graph view' : 'Table view' }}
       </button>
     </header>
@@ -65,7 +66,7 @@ interface Tip {
         <p class="empty">Waiting for priced transfers. Prices come from labels and Chainlink feeds; unpriced tokens are not drawn.</p>
       }
       @if (tip(); as t) {
-        <div class="tip" role="status" [style.left.px]="t.x" [style.top.px]="t.y">
+        <div class="chart-tip tip" role="status" [style.left.px]="t.x" [style.top.px]="t.y">
           <strong>{{ t.title }}</strong>
           @for (l of t.lines; track $index) { <div>{{ l }}</div> }
         </div>
@@ -74,7 +75,7 @@ interface Tip {
 
     @if (table()) {
       <div class="table-wrap">
-        <table>
+        <table class="data-table">
           <thead><tr><th>From</th><th>To</th><th class="num">USD</th><th class="num">Transfers</th><th>Tokens</th></tr></thead>
           <tbody>
             @for (e of tableRows(); track e.id) {
@@ -102,28 +103,18 @@ interface Tip {
   `,
   styles: `
     :host { display: block; }
-    .head { display: flex; justify-content: space-between; gap: 12px; align-items: flex-start; margin-bottom: 10px; }
-    .head h2 { font: 600 20px/1.2 var(--font-display); letter-spacing: -0.02em; margin: 0; }
-    .sub { margin: 4px 0 0; color: var(--ink-3); font-size: 13px; }
     .hot-key { color: var(--sev-critical); font-weight: 600; }
-    .view { flex: none; background: none; border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--ink-2); cursor: pointer; }
-    .view:hover { background: var(--surface-2); }
     .stage { position: relative; }
-    .canvas { height: 380px; border-radius: var(--radius-sm); background: var(--surface-1); border: 1px solid var(--hairline); }
-    .empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--ink-3); font-size: 13px; pointer-events: none; }
-    .tip { position: absolute; transform: translate(-50%, calc(-100% - 12px)); background: var(--surface-3); border: 1px solid var(--hairline-strong); border-radius: 8px; padding: 6px 10px; font-size: 12px; color: var(--ink-2); white-space: nowrap; pointer-events: none; z-index: 2; }
-    .tip strong { color: var(--ink-1); font-weight: 600; display: block; }
-    .legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 14px; margin: 10px 0 0; padding: 0; color: var(--ink-3); font-size: 12px; }
-    .legend li { display: inline-flex; align-items: center; gap: 5px; }
-    .legend svg { width: 14px; height: 14px; fill: var(--surface-3); stroke: var(--ink-2); stroke-width: 1.2; }
-    .swatch { width: 12px; height: 3px; border-radius: 2px; display: inline-block; }
+    .canvas { height: 420px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--rule-soft); }
+    .empty { position: absolute; inset: 0; display: grid; place-items: center; margin: 0; padding: 24px; text-align: center; color: var(--graphite); font-size: 13px; pointer-events: none; }
+    .tip { transform: translate(-50%, calc(-100% - 12px)); }
+    .legend { list-style: none; display: flex; flex-wrap: wrap; gap: 6px 16px; margin: 12px 0 0; padding: 0; color: var(--graphite); font-size: 12.5px; }
+    .legend li { display: inline-flex; align-items: center; gap: 6px; }
+    .legend svg { width: 14px; height: 14px; fill: var(--surface); stroke: var(--graphite); stroke-width: 1.2; }
+    .swatch { width: 14px; height: 3px; border-radius: 2px; display: inline-block; }
     .swatch.hot { background: var(--sev-critical); }
-    .table-wrap { max-height: 380px; overflow: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    th { text-align: left; color: var(--ink-3); font-weight: 500; padding: 5px 8px; border-bottom: 1px solid var(--hairline); position: sticky; top: 0; background: var(--surface-1); }
-    td { padding: 5px 8px; border-bottom: 1px solid var(--hairline); color: var(--ink-2); }
-    tr.hot td:first-child { box-shadow: inset 2px 0 var(--sev-critical); }
-    .num { text-align: right; font-variant-numeric: tabular-nums; font-family: var(--font-mono); }
+    .table-wrap { max-height: 420px; overflow: auto; }
+    tr.hot td:first-child { box-shadow: inset 3px 0 var(--sev-critical); }
   `,
 })
 export class FundFlowGraph {
@@ -135,6 +126,8 @@ export class FundFlowGraph {
   protected readonly tip = signal<Tip | null>(null);
   protected readonly legend = Object.values(SHAPES);
   protected readonly money = usdCompact;
+  protected readonly int = int;
+  private readonly theme = inject(ThemeService);
 
   protected readonly graph = computed(() => buildGraph(this.blocks(), this.alerts()));
   protected readonly tableRows = computed(() => this.graph().edges.slice(0, 40));
@@ -167,18 +160,17 @@ export class FundFlowGraph {
       this.cy.on('mouseover', 'node', (e) => this.showTip(e));
       this.cy.on('mouseover', 'edge', (e) => this.showTip(e));
       this.cy.on('mouseout viewport', () => this.tip.set(null));
-      const theme = matchMedia('(prefers-color-scheme: light)');
-      const restyle = () => this.cy?.style(stylesheet());
-      theme.addEventListener('change', restyle);
-      destroyRef.onDestroy(() => {
-        theme.removeEventListener('change', restyle);
-        this.cy?.destroy();
-      });
+      destroyRef.onDestroy(() => this.cy?.destroy());
       this.sync(this.graph());
     });
     effect(() => {
       const g = this.graph();
       if (this.cy) this.sync(g);
+    });
+    // Canvas cannot read CSS variables live: restyle when the theme changes.
+    effect(() => {
+      this.theme.theme();
+      this.cy?.style(stylesheet());
     });
   }
 
@@ -250,8 +242,8 @@ export class FundFlowGraph {
         y: p.y,
         title: n.name,
         lines: [
-          `${shapeFor(n.category).label}${n.labeled ? '' : ` · ${shortAddr(n.id)}`}`,
-          `in ${usdCompact(n.inUsd)} · out ${usdCompact(n.outUsd)}`,
+          `${shapeFor(n.category).label}${n.labeled ? '' : `, ${shortAddr(n.id)}`}`,
+          `In ${usdCompact(n.inUsd)}, out ${usdCompact(n.outUsd)}`,
           ...(n.alerted ? ['Evidence in an open alert'] : []),
         ],
       });
@@ -261,7 +253,7 @@ export class FundFlowGraph {
         x: p.x,
         y: p.y,
         title: `${this.name(d.source)} → ${this.name(d.target)}`,
-        lines: [`${usdCompact(d.usd)} · ${d.transfers} transfer${d.transfers === 1 ? '' : 's'}`, d.tokens.join(', ') || 'priced tokens', `last in block #${d.latest}`],
+        lines: [`${usdCompact(d.usd)} in ${d.transfers} transfer${d.transfers === 1 ? '' : 's'}`, d.tokens.join(', ') || 'Priced tokens', `Latest in block ${int(d.latest)}`],
       });
     }
   }
@@ -278,29 +270,29 @@ function stylesheet(): StylesheetJson {
         shape: 'data(shape)' as never,
         width: 'mapData(size, 3, 9, 10, 34)',
         height: 'mapData(size, 3, 9, 10, 34)',
-        'background-color': v('--surface-3'),
+        'background-color': v('--surface'),
         'border-width': 1,
-        'border-color': v('--hairline-strong') || v('--axis'),
+        'border-color': v('--rule-strong'),
         label: '',
         color: v('--ink-2'),
-        'font-family': v('--font-ui'),
+        'font-family': v('--font'),
         'font-size': 10,
         'text-valign': 'bottom',
         'text-margin-y': 4,
-        'text-background-color': v('--surface-1'),
+        'text-background-color': v('--surface'),
         'text-background-opacity': 0.85,
         'text-background-padding': '2px',
         'text-background-shape': 'roundrectangle',
       },
     },
-    { selector: 'node.labeled', style: { label: 'data(name)', 'border-color': v('--brand'), 'border-width': 1.5 } },
-    { selector: 'node.hot', style: { 'border-color': v('--sev-critical'), 'border-width': 3, color: v('--ink-1'), label: 'data(name)' } },
+    { selector: 'node.labeled', style: { label: 'data(name)', 'border-color': v('--graphite'), 'border-width': 1.5, color: v('--ink-2') } },
+    { selector: 'node.hot', style: { 'border-color': v('--sev-critical'), 'border-width': 3, color: v('--ink'), label: 'data(name)' } },
     {
       selector: 'edge',
       style: {
         width: 'mapData(weight, 4, 9, 1, 6)',
-        'line-color': v('--brand'),
-        'target-arrow-color': v('--brand'),
+        'line-color': v('--series'),
+        'target-arrow-color': v('--series'),
         'target-arrow-shape': 'triangle',
         'arrow-scale': 0.7,
         'curve-style': 'bezier',

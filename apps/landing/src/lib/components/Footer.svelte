@@ -9,7 +9,7 @@
 		'USDC depeg: Chainlink USDC/USD rounds 856 to 984, 11 March 2023. Round 871 at block 16,802,135 ($0.97652) is the first answer outside the 2% band; the preceding round 870 ($0.98214) is inside it.',
 		'Model evaluation: 200 consecutive mainnet blocks before the exploit (16,817,796 to 16,817,995), about 15,500 transactions, scored online with the shipped thresholds.',
 		`Recorded run: Ethereum mainnet blocks ${RUN.first_block.toLocaleString('en-US')} to ${RUN.last_block.toLocaleString('en-US')}, ${RUN.blocks} blocks, every one attested by both providers, 10 November 2026. Priced value is gross: a flash loan counts out and back.`,
-		'Latency: one Windows development machine, not a benchmark. Block-time-to-alert could not be measured because the machine’s clock was 117 seconds behind; ChainGuard detected the skew and withheld the figure.',
+		'Latency: one Windows development machine, not a benchmark. Block-time-to-alert could not be measured because the machine’s clock was 117 seconds behind; SvlteChain detected the skew and withheld the figure.',
 		'Start-up: scripts/up.sh --replay on the same machine with warm build caches, until every service passed its health check.'
 	];
 
@@ -31,7 +31,7 @@
 
 		<div class="sitemap">
 			<div class="about">
-				<a class="brand" href="/"><Mark size={22} /> ChainGuard</a>
+				<a class="brand" href="/"><Mark size={22} /> SvlteChain</a>
 				<p>Open-source, read-only risk monitoring for blockchains. It observes and reports; it never holds keys or moves funds.</p>
 			</div>
 			{#each cols as c (c.h)}

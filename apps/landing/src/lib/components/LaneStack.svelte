@@ -74,7 +74,7 @@
 			<h2 id="lanes-title" class="h2" data-reveal>Three ways to catch an attack. <span class="soft">Because no single method sees everything.</span></h2>
 			<p class="lead" data-reveal>
 				Known attacks leave known shapes. Protocol failures break properties that should always hold. And the next
-				exploit may look like nothing seen before. ChainGuard runs a detection lane for each, on every block.
+				exploit may look like nothing seen before. SvlteChain runs a detection lane for each, on every block.
 			</p>
 		</div>
 
@@ -115,11 +115,11 @@
 					<h3 class="h3">Invariants for each protocol’s health</h3>
 					<p>
 						Some failures are not attacks: a stablecoin slipping off its peg, an oracle that stops updating, a lending
-						market losing funds faster than it ever has. An invariant states what must stay true, and ChainGuard checks
+						market losing funds faster than it ever has. An invariant states what must stay true, and SvlteChain checks
 						it on every block.
 					</p>
 					<p>
-						On 11 March 2023, Chainlink’s USDC price left its 2% band at block {breach.block.toLocaleString('en-US')}. ChainGuard raises one high
+						On 11 March 2023, Chainlink’s USDC price left its 2% band at block {breach.block.toLocaleString('en-US')}. SvlteChain raises one high
 						alert at that moment, stays quiet while the price stays in that band, and escalates only if it falls past 5%.
 					</p>
 					<a href={DOCS.invariants}>See the bundled invariants</a>

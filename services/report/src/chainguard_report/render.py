@@ -144,7 +144,7 @@ def render(data: ReportData, generated_at: datetime | None = None) -> bytes:
         canvas.saveState()
         canvas.setFont("Helvetica", 7)
         canvas.setFillColor(MUTED)
-        canvas.drawString(18 * mm, 10 * mm, f"ChainGuard compliance report - alert {a.get('id')}")
+        canvas.drawString(18 * mm, 10 * mm, f"SvlteChain compliance report - alert {a.get('id')}")
         canvas.drawRightString(
             192 * mm, 10 * mm, f"page {doc.page} - inputs sha256 {fingerprint[:16]}"
         )
@@ -157,14 +157,14 @@ def render(data: ReportData, generated_at: datetime | None = None) -> bytes:
         rightMargin=18 * mm,
         topMargin=16 * mm,
         bottomMargin=18 * mm,
-        title=ascii_only(f"ChainGuard report: {a.get('title', '')}"),
-        author="ChainGuard",
+        title=ascii_only(f"SvlteChain report: {a.get('title', '')}"),
+        author="SvlteChain",
         subject=f"Alert {a.get('id')}",
     )
 
     sev = a.get("severity", "info")
     story = [
-        p("ChainGuard compliance report", SMALL),
+        p("SvlteChain compliance report", SMALL),
         p(esc(a.get("title", "")), H1),
         p(
             f'<font color="{SEV.get(sev, MUTED).hexval()}"><b>{esc(sev).upper()}</b></font>'
@@ -313,7 +313,7 @@ def render(data: ReportData, generated_at: datetime | None = None) -> bytes:
             [
                 p("Method", H2),
                 p(
-                    "ChainGuard is read-only: it holds no keys and never sends transactions. Evidence is "
+                    "SvlteChain is read-only: it holds no keys and never sends transactions. Evidence is "
                     "accepted only when a strict majority of at least two independent RPC nodes return it "
                     "identically. Alerts stay provisional until their blocks are final and are retracted if "
                     "a reorg orphans their evidence.",

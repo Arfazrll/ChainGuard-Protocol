@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# ChainGuard on one machine, in one command.
+# SvlteChain on one machine, in one command.
 #
 #   scripts/up.sh            live: Ethereum mainnet via two public RPCs
 #   scripts/up.sh --replay   replay real incidents (USDC depeg, Euler exploit):
@@ -42,7 +42,7 @@ need npm "Node 24: https://nodejs.org"
 need curl "curl"
 
 if ls "$RUN"/*.pid >/dev/null 2>&1; then
-  echo "ChainGuard seems to be running already (var/run/*.pid). Run scripts/down.sh first." >&2
+  echo "SvlteChain seems to be running already (var/run/*.pid). Run scripts/down.sh first." >&2
   exit 1
 fi
 
@@ -120,7 +120,7 @@ wait_for dashboard http://127.0.0.1:4300/ 240
 
 cat <<EOF
 
-ChainGuard is up ($MODE).
+SvlteChain is up ($MODE).
 
   Dashboard        http://localhost:4300
   Engine API       http://localhost:4000/api/health   (alerts, scores, audit/verify)

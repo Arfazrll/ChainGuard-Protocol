@@ -4,15 +4,15 @@
 	const faqs = [
 		{
 			q: 'Is the data on this page real?',
-			a: 'Yes. In live mode ChainGuard reads Ethereum mainnet from two independent providers. The incidents shown here are real mainnet blocks, captured from two providers and replayed unchanged, and their transaction hashes can be checked on any block explorer. Only the automated tests use made-up data.'
+			a: 'Yes. In live mode SvlteChain reads Ethereum mainnet from two independent providers. The incidents shown here are real mainnet blocks, captured from two providers and replayed unchanged, and their transaction hashes can be checked on any block explorer. Only the automated tests use made-up data.'
 		},
 		{
 			q: 'How is this different from a block explorer or simple wallet alerts?',
-			a: 'Explorers show what happened; ChainGuard decides whether it is dangerous. It verifies every block across independent nodes, understands protocol-level events like flash loans and oracle updates, nets flows per protocol, checks invariants, and attaches the exact evidence to every alert, with a lifecycle that follows chain reorganizations.'
+			a: 'Explorers show what happened; SvlteChain decides whether it is dangerous. It verifies every block across independent nodes, understands protocol-level events like flash loans and oracle updates, nets flows per protocol, checks invariants, and attaches the exact evidence to every alert, with a lifecycle that follows chain reorganizations.'
 		},
 		{
 			q: 'Why does it need two nodes?',
-			a: 'A single node can lag, sit on a fork, or simply return incomplete data. ChainGuard only accepts a block when a strict majority of at least two independent providers return it identically. It is slower to trust and much harder to fool.'
+			a: 'A single node can lag, sit on a fork, or simply return incomplete data. SvlteChain only accepts a block when a strict majority of at least two independent providers return it identically. It is slower to trust and much harder to fool.'
 		},
 		{
 			q: 'What happens when the chain reorganizes?',
@@ -23,7 +23,7 @@
 			a: 'No. Model alerts are capped at medium severity, enforced in the engine. They point a person at something unusual; pages come only from rules and invariants backed by two-node evidence.'
 		},
 		{
-			q: 'Can ChainGuard stop an attack?',
+			q: 'Can SvlteChain stop an attack?',
 			a: 'No, and deliberately so. It holds no keys and cannot send transactions. What it can do is tell the people who hold a protocol’s pause key within seconds of the block, with the transaction that proves it.'
 		},
 		{
@@ -32,11 +32,11 @@
 		},
 		{
 			q: 'How tamper-evident is the audit trail, really?',
-			a: 'Every entry is hash-chained and the database refuses edits and deletions. A database superuser could still rewrite the whole history consistently, which is why ChainGuard publishes the latest hash: recorded somewhere else, it makes any later rewrite detectable. It is tamper-evident, not tamper-proof, and we say so.'
+			a: 'Every entry is hash-chained and the database refuses edits and deletions. A database superuser could still rewrite the whole history consistently, which is why SvlteChain publishes the latest hash: recorded somewhere else, it makes any later rewrite detectable. It is tamper-evident, not tamper-proof, and we say so.'
 		},
 		{
 			q: 'What does it cost?',
-			a: 'ChainGuard is open source under the MIT license and runs on your own infrastructure. Your costs are the machines and the RPC providers you choose; the public providers used in the demo are free but rate-limited.'
+			a: 'SvlteChain is open source under the MIT license and runs on your own infrastructure. Your costs are the machines and the RPC providers you choose; the public providers used in the demo are free but rate-limited.'
 		}
 	];
 </script>

@@ -15,7 +15,7 @@
 			<span class="soft">Trust no single node.</span>
 		</h1>
 		<p class="lead" data-reveal>
-			ChainGuard is open-source risk monitoring for blockchains. It confirms every block with independent nodes,
+			SvlteChain is open-source risk monitoring for blockchains. It confirms every block with independent nodes,
 			detects exploits and protocol failures as they happen, and backs each alert with on-chain evidence your risk
 			team can check for itself.
 		</p>
@@ -24,7 +24,7 @@
 			<a class="btn btn-secondary" href="#case-study">See the Euler replay</a>
 		</div>
 		<p class="assure" data-reveal>
-			Read-only by design. ChainGuard holds no keys, signs nothing and never sends a transaction.
+			Read-only by design. SvlteChain holds no keys, signs nothing and never sends a transaction.
 			<a href="#security">How that is enforced</a>
 		</p>
 	</div>

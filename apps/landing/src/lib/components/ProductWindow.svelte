@@ -1,6 +1,6 @@
 <script lang="ts">
 	/**
-	 * A faithful, static rendering of the ChainGuard dashboard after the
+	 * A faithful, static rendering of the SvlteChain dashboard after the
 	 * incident replay. Every value is what the engine produced on the real
 	 * Euler and USDC fixtures (see apps/engine/test/fixtures/incidents).
 	 */
@@ -38,7 +38,7 @@
 	});
 </script>
 
-<div class="window" role="img" aria-label="The ChainGuard dashboard after replaying the Euler Finance exploit: three alerts, Euler's risk score at 0, the exploit's fund flows and a verified audit chain.">
+<div class="window" role="img" aria-label="The SvlteChain dashboard after replaying the Euler Finance exploit: three alerts, Euler's risk score at 0, the exploit's fund flows and a verified audit chain.">
 	<div class="chrome">
 		<span class="dots" aria-hidden="true"><i></i><i></i><i></i></span>
 		<span class="url">localhost:4300</span>
@@ -46,9 +46,9 @@
 	</div>
 	<div class="app">
 		<aside class="side">
-			<div class="logo"><span class="sq"></span>ChainGuard</div>
+			<div class="logo"><span class="sq"></span>SvlteChain</div>
 			<nav>
-				<span class="on">Overview</span><span>Alerts</span><span>Fund flows</span><span>Risk</span><span>Audit</span><span>Organization</span>
+				<span class="on">Overview</span><span>Alerts</span><span>Risk and audit</span><span>Invariants</span><span>Fund flows</span><span>Blocks</span>
 			</nav>
 			<div class="chain">Ethereum mainnet</div>
 		</aside>

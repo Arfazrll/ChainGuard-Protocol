@@ -27,9 +27,12 @@ export function niceMax(max: number): { top: number; step: number } {
   selector: 'cg-records-chart',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="head">
-      <h2>Records per block</h2>
-      <button type="button" class="view" (click)="table.set(!table())" [attr.aria-pressed]="table()">
+    <header class="panel-head">
+      <div>
+        <h2>Records per block</h2>
+        <p class="panel-sub">Decoded events and transfers in each of the last 30 blocks.</p>
+      </div>
+      <button type="button" class="btn-quiet" (click)="table.set(!table())" [attr.aria-pressed]="table()">
         {{ table() ? 'Chart view' : 'Table view' }}
       </button>
     </header>
@@ -38,16 +41,16 @@ export function niceMax(max: number): { top: number; step: number } {
       <p class="empty">No blocks yet.</p>
     } @else if (table()) {
       <div class="table-wrap">
-        <table>
+        <table class="data-table">
           <thead><tr><th>Block</th><th class="num">Records</th><th class="num">Txs</th><th class="num">Rule eval</th><th>Status</th></tr></thead>
           <tbody>
             @for (b of tableRows(); track b.hash) {
               <tr>
-                <td class="mono">#{{ int(b.number) }}</td>
+                <td class="num">{{ int(b.number) }}</td>
                 <td class="num">{{ int(b.records) }}</td>
                 <td class="num">{{ int(b.txs) }}</td>
                 <td class="num">{{ ms(b.eval_ms) }}</td>
-                <td>{{ b.status }}</td>
+                <td>{{ statusLabel[b.status] }}</td>
               </tr>
             }
           </tbody>
@@ -77,16 +80,16 @@ export function niceMax(max: number): { top: number; step: number } {
             />
           }
           <line class="axis" [attr.x1]="pad.left" [attr.x2]="w() - pad.right" [attr.y1]="h - pad.bottom" [attr.y2]="h - pad.bottom" />
-          @if (bars().length > 1) {
-            <text class="tick" [attr.x]="bars()[0].x" [attr.y]="h - 6">#{{ int(bars()[0].number) }}</text>
+          @if (bars().length > 1 && bars()[bars().length - 1].x - bars()[0].x > 90) {
+            <text class="tick" [attr.x]="bars()[0].x" [attr.y]="h - 6">{{ int(bars()[0].number) }}</text>
           }
-          <text class="tick" [attr.x]="w() - pad.right" [attr.y]="h - 6" text-anchor="end">#{{ int(bars()[bars().length - 1].number) }}</text>
+          <text class="tick" [attr.x]="w() - pad.right" [attr.y]="h - 6" text-anchor="end">{{ int(bars()[bars().length - 1].number) }}</text>
         </svg>
         @if (hovered(); as b) {
-          <div class="tip" [style.left.px]="b.x + b.width / 2" role="status">
-            <div class="mono">#{{ int(b.number) }}</div>
-            <div><strong>{{ int(b.records) }}</strong> records · {{ int(b.txs) }} txs</div>
-            <div class="muted">rule eval {{ ms(b.eval_ms) }} · {{ b.status }}</div>
+          <div class="chart-tip tip" [style.left.px]="b.x + b.width / 2" role="status">
+            <strong>Block {{ int(b.number) }}</strong>
+            <div>{{ int(b.records) }} records in {{ int(b.txs) }} transactions</div>
+            <div class="muted">Rules evaluated in {{ ms(b.eval_ms) }}. {{ statusLabel[b.status] }}.</div>
           </div>
         }
       </div>
@@ -94,31 +97,19 @@ export function niceMax(max: number): { top: number; step: number } {
   `,
   styles: `
     :host { display: block; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 10px; }
-    .head h2 { font: 600 16px/1.2 var(--font-display); letter-spacing: -0.01em; margin: 0; }
-    .view { background: none; border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 3px 10px; font-size: 12px; color: var(--ink-2); cursor: pointer; }
-    .view:hover { background: var(--surface-2); }
     .plot { position: relative; }
     svg { display: block; overflow: visible; }
     .grid { stroke: var(--grid); stroke-width: 1; vector-effect: non-scaling-stroke; }
     .axis { stroke: var(--axis); stroke-width: 1; vector-effect: non-scaling-stroke; }
-    .tick { fill: var(--ink-3); font: 10.5px var(--font-ui); font-variant-numeric: tabular-nums; }
-    .bar { fill: var(--brand); transition: opacity 0.15s; }
+    .tick { fill: var(--muted); font: 11px var(--font); font-variant-numeric: tabular-nums; }
+    .bar { fill: var(--series); transition: opacity 0.15s; }
     .bar.orphaned { fill: var(--surface-3); }
-    .bar.dim { opacity: 0.45; }
+    .bar.dim { opacity: 0.4; }
     .hit { fill: transparent; cursor: default; outline: none; }
-    .tip {
-      position: absolute; top: 0; transform: translate(-50%, -100%);
-      background: var(--surface-3); border: 1px solid var(--hairline-strong); border-radius: 8px;
-      padding: 6px 10px; font-size: 12px; white-space: nowrap; pointer-events: none; color: var(--ink-1);
-    }
-    .muted { color: var(--ink-3); }
-    .empty { color: var(--ink-3); margin: 0; }
-    .table-wrap { max-height: 190px; overflow: auto; }
-    table { width: 100%; border-collapse: collapse; font-size: 12.5px; }
-    th { text-align: left; color: var(--ink-3); font-weight: 500; padding: 4px 8px; border-bottom: 1px solid var(--hairline); position: sticky; top: 0; background: var(--surface-1); }
-    td { padding: 4px 8px; border-bottom: 1px solid var(--hairline); color: var(--ink-2); }
-    .num { text-align: right; font-variant-numeric: tabular-nums; }
+    .tip { top: 0; transform: translate(-50%, calc(-100% - 6px)); }
+    .muted { color: var(--muted); }
+    .empty { color: var(--graphite); margin: 0; }
+    .table-wrap { max-height: 220px; overflow: auto; }
   `,
 })
 export class RecordsChart {
@@ -133,6 +124,7 @@ export class RecordsChart {
   protected readonly hover = signal<number | null>(null);
   protected int = int;
   protected ms = ms;
+  protected readonly statusLabel = { provisional: 'Provisional', final: 'Final', orphaned: 'Orphaned' } as const;
 
   /** Oldest → newest, at most 30. */
   private readonly series = computed(() => [...this.blocks()].slice(0, SLOTS).reverse());

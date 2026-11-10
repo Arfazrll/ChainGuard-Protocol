@@ -1,97 +1,136 @@
 /*
- * ChainGuard design tokens. Dark-first; light is secondary.
- * Color roles carry meaning and are never scattered as raw hex in components:
- *   --brand   violet: brand, focus, the single chart series
- *   --live    emerald: live / healthy / verified only
- *   --sev-*   red/amber/orange: alerts and risk only (always with label + glyph)
- * Chart color validated with the dataviz validator on --surface-1 (#131317).
+ * SvlteChain dashboard: design tokens, shared with the landing page.
+ *
+ * Neutral surfaces, one action colour (cobalt), one risk colour (signal red).
+ * Severity is always a text label first and a colour second.
+ * Chart series colours validated with the dataviz validator:
+ *   #2446d8 on #ffffff (light), #6a85f5 on #161b22 (dark).
+ *
+ * Light is the default; dark follows the system unless the user picks a
+ * theme, which is stored and applied as html[data-theme].
  */
 :root {
-  color-scheme: dark;
-  --bg: #0b0b0e;
-  --surface-1: #131317;
-  --surface-2: #1a1a20;
-  --surface-3: #23232b;
-  --glass: rgba(24, 24, 31, 0.62);
-  --hairline: rgba(255, 255, 255, 0.07);
-  --hairline-strong: rgba(255, 255, 255, 0.13);
+  color-scheme: light;
+  --bg: #f5f6f7;
+  --surface: #ffffff;
+  --surface-2: #f5f6f7;
+  --surface-3: #e9ebee;
+  --rule: #dde0e4;
+  --rule-soft: #e9ebee;
+  --rule-strong: #c6cbd2;
 
-  --ink-1: #f0efec;
-  --ink-2: #c3c2b7;
-  --ink-3: #898781;
+  --ink: #0d1117;
+  --ink-2: #2c323b;
+  --graphite: #59606b;
+  --muted: #6b727d;
 
-  --brand: #8f7cf7;
-  --brand-ink: #b9adff;
-  --brand-wash: rgba(143, 124, 247, 0.13);
-  --live: #34d399;
-  --live-wash: rgba(52, 211, 153, 0.12);
+  --cobalt: #2446d8;
+  --cobalt-hover: #1a36b8;
+  --cobalt-wash: #eaeefc;
+  --series: #2446d8;
+  --ok: #1f7a4d;
+  --ok-wash: #e7f4ec;
 
-  --sev-critical: #d03b3b;
-  --sev-high: #ec835a;
-  --sev-medium: #fab219;
-  --sev-low: #898781;
-  --sev-info: #6b6a66;
+  --sev-critical: #c2352d;
+  --sev-critical-wash: #fbeceb;
+  --sev-high: #b3461b;
+  --sev-high-wash: #fcefe7;
+  --sev-medium: #a86200;
+  --sev-medium-wash: #fdf2e1;
+  --sev-low: #59606b;
+  --sev-low-wash: #e9ebee;
 
-  --grid: #24242b;
-  --axis: #383835;
+  --grid: #e9ebee;
+  --axis: #c6cbd2;
 
-  --font-display: 'Bricolage Grotesque', 'Inter Tight', system-ui, sans-serif;
-  --font-ui: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
-  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+  --font: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
 
-  --radius: 12px;
-  --radius-sm: 8px;
-  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+  --r: 14px;
+  --r-sm: 10px;
+  --side-w: 232px;
+  --ease: cubic-bezier(0.22, 0.61, 0.36, 1);
 }
 
-@media (prefers-color-scheme: light) {
-  :root:where(:not([data-theme='dark'])) {
-    color-scheme: light;
-    --bg: #f4f4f1;
-    --surface-1: #fcfcfb;
-    --surface-2: #f3f2ee;
-    --surface-3: #e9e8e2;
-    --glass: rgba(252, 252, 251, 0.78);
-    --hairline: rgba(11, 11, 11, 0.08);
-    --hairline-strong: rgba(11, 11, 11, 0.15);
-    --ink-1: #0b0b0b;
-    --ink-2: #52514e;
-    --ink-3: #75736d;
-    --brand: #6250d6;
-    --brand-ink: #4a3aa7;
-    --brand-wash: rgba(98, 80, 214, 0.1);
-    --live: #0b8a5a;
-    --live-wash: rgba(11, 138, 90, 0.1);
-    --grid: #e6e5df;
-    --axis: #c3c2b7;
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    color-scheme: dark;
+    --bg: #0d1117;
+    --surface: #161b22;
+    --surface-2: #1c222b;
+    --surface-3: #262d37;
+    --rule: #2a313b;
+    --rule-soft: #222932;
+    --rule-strong: #3a4350;
+    --ink: #eef0f3;
+    --ink-2: #c9d0d8;
+    --graphite: #a9b1bc;
+    --muted: #8b949e;
+    --cobalt: #7d97ff;
+    --cobalt-hover: #9aafff;
+    --cobalt-wash: rgba(125, 151, 255, 0.12);
+    --series: #6a85f5;
+    --ok: #5cc28a;
+    --ok-wash: rgba(92, 194, 138, 0.12);
+    --sev-critical: #f0716a;
+    --sev-critical-wash: rgba(240, 113, 106, 0.14);
+    --sev-high: #f0965f;
+    --sev-high-wash: rgba(240, 150, 95, 0.13);
+    --sev-medium: #e3b341;
+    --sev-medium-wash: rgba(227, 179, 65, 0.13);
+    --sev-low: #a9b1bc;
+    --sev-low-wash: #262d37;
+    --grid: #222932;
+    --axis: #3a4350;
   }
 }
 
-:root[data-theme='light'] {
-  color-scheme: light;
-  --bg: #f4f4f1;
-  --surface-1: #fcfcfb;
-  --surface-2: #f3f2ee;
-  --surface-3: #e9e8e2;
-  --glass: rgba(252, 252, 251, 0.78);
-  --hairline: rgba(11, 11, 11, 0.08);
-  --hairline-strong: rgba(11, 11, 11, 0.15);
-  --ink-1: #0b0b0b;
-  --ink-2: #52514e;
-  --ink-3: #75736d;
-  --brand: #6250d6;
-  --brand-ink: #4a3aa7;
-  --brand-wash: rgba(98, 80, 214, 0.1);
-  --live: #0b8a5a;
-  --live-wash: rgba(11, 138, 90, 0.1);
-  --grid: #e6e5df;
-  --axis: #c3c2b7;
+:root[data-theme='dark'] {
+  color-scheme: dark;
+  --bg: #0d1117;
+  --surface: #161b22;
+  --surface-2: #1c222b;
+  --surface-3: #262d37;
+  --rule: #2a313b;
+  --rule-soft: #222932;
+  --rule-strong: #3a4350;
+  --ink: #eef0f3;
+  --ink-2: #c9d0d8;
+  --graphite: #a9b1bc;
+  --muted: #8b949e;
+  --cobalt: #7d97ff;
+  --cobalt-hover: #9aafff;
+  --cobalt-wash: rgba(125, 151, 255, 0.12);
+  --series: #6a85f5;
+  --ok: #5cc28a;
+  --ok-wash: rgba(92, 194, 138, 0.12);
+  --sev-critical: #f0716a;
+  --sev-critical-wash: rgba(240, 113, 106, 0.14);
+  --sev-high: #f0965f;
+  --sev-high-wash: rgba(240, 150, 95, 0.13);
+  --sev-medium: #e3b341;
+  --sev-medium-wash: rgba(227, 179, 65, 0.13);
+  --sev-low: #a9b1bc;
+  --sev-low-wash: #262d37;
+  --grid: #222932;
+  --axis: #3a4350;
 }
 
 *,
 *::before,
 *::after {
   box-sizing: border-box;
+}
+
+html {
+  background: var(--bg);
+  -webkit-text-size-adjust: 100%;
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
 }
 
 html,
@@ -102,22 +141,28 @@ body {
 
 body {
   background: var(--bg);
-  color: var(--ink-1);
-  font: 14px/1.45 var(--font-ui);
+  color: var(--ink);
+  font: 400 14px/1.5 var(--font);
   -webkit-font-smoothing: antialiased;
-  /* Atmosphere: two faint light blooms, never competing with content. */
-  background-image:
-    radial-gradient(60rem 30rem at -10% -20%, var(--brand-wash), transparent 70%),
-    radial-gradient(40rem 24rem at 110% -10%, var(--live-wash), transparent 70%);
-  background-attachment: fixed;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+h1,
+h2,
+h3,
+h4 {
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  margin: 0;
 }
 
 a {
-  color: var(--brand-ink);
+  color: var(--cobalt);
   text-decoration: none;
 }
 a:hover {
   text-decoration: underline;
+  text-underline-offset: 3px;
 }
 
 button {
@@ -126,15 +171,18 @@ button {
 }
 
 :focus-visible {
-  outline: 2px solid var(--brand);
+  outline: 2px solid var(--cobalt);
   outline-offset: 2px;
   border-radius: 4px;
 }
 
 .mono {
-  font-family: var(--font-mono);
-  font-size: 12.5px;
-  letter-spacing: -0.01em;
+  font-family: var(--mono);
+  font-size: 0.92em;
+}
+
+.num {
+  font-variant-numeric: tabular-nums;
 }
 
 .visually-hidden {
@@ -146,33 +194,119 @@ button {
   white-space: nowrap;
 }
 
-/* Severity chip: glyph + label + color, so color is never alone. */
+/* Panel heading row, shared by every card. */
+.panel-head {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 14px;
+}
+.panel-head h2 {
+  font-size: 16px;
+}
+.panel-sub {
+  margin: 4px 0 0;
+  color: var(--graphite);
+  font-size: 13px;
+}
+.panel-meta {
+  color: var(--muted);
+  font-size: 12.5px;
+}
+
+/* Quiet secondary button. */
+.btn-quiet {
+  flex: none;
+  padding: 5px 12px;
+  border: 1px solid var(--rule);
+  border-radius: 8px;
+  background: var(--surface);
+  color: var(--ink-2);
+  font-size: 12.5px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: border-color 0.15s var(--ease), background 0.15s var(--ease);
+}
+.btn-quiet:hover {
+  border-color: var(--rule-strong);
+  background: var(--surface-2);
+}
+
+/* Severity: the label carries the meaning, colour backs it up. */
 .sev {
   display: inline-flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 8px 2px 6px;
-  border-radius: 999px;
-  font-size: 11.5px;
-  font-weight: 600;
-  letter-spacing: 0.02em;
-  text-transform: uppercase;
-  color: var(--ink-1);
-  background: var(--surface-3);
-  border: 1px solid var(--hairline);
+  padding: 1px 8px;
+  border-radius: 6px;
+  font: 600 12px/20px var(--font);
+  white-space: nowrap;
+  color: var(--sev-low);
+  background: var(--sev-low-wash);
+  border: 1px solid transparent;
+}
+.sev--critical {
+  color: var(--sev-critical);
+  background: var(--sev-critical-wash);
+}
+.sev--high {
+  color: var(--sev-high);
+  background: var(--sev-high-wash);
+}
+.sev--medium {
+  color: var(--sev-medium);
+  background: var(--sev-medium-wash);
+}
+
+/* Shared data table. */
+.data-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 13px;
+}
+.data-table th {
+  text-align: left;
+  font-weight: 500;
+  font-size: 12px;
+  color: var(--muted);
+  padding: 6px 10px;
+  border-bottom: 1px solid var(--rule);
+  white-space: nowrap;
+  position: sticky;
+  top: 0;
+  background: var(--surface);
+}
+.data-table td {
+  padding: 7px 10px;
+  border-bottom: 1px solid var(--rule-soft);
+  color: var(--ink-2);
   white-space: nowrap;
 }
-.sev i {
-  font-style: normal;
-  font-size: 10px;
+.data-table .num {
+  text-align: right;
 }
-.sev--critical i { color: var(--sev-critical); }
-.sev--high i { color: var(--sev-high); }
-.sev--medium i { color: var(--sev-medium); }
-.sev--low i { color: var(--sev-low); }
-.sev--info i { color: var(--sev-info); }
-.sev--critical { border-color: color-mix(in srgb, var(--sev-critical) 55%, transparent); }
-.sev--high { border-color: color-mix(in srgb, var(--sev-high) 45%, transparent); }
+
+/* Hover tooltip for charts and the graph. */
+.chart-tip {
+  position: absolute;
+  background: var(--surface);
+  border: 1px solid var(--rule-strong);
+  border-radius: 8px;
+  padding: 7px 10px;
+  font-size: 12.5px;
+  color: var(--ink-2);
+  white-space: nowrap;
+  pointer-events: none;
+  z-index: 3;
+  box-shadow: 0 8px 24px -12px rgba(13, 17, 23, 0.35);
+}
+.chart-tip strong {
+  display: block;
+  color: var(--ink);
+  font-weight: 600;
+}
 
 @media (prefers-reduced-motion: reduce) {
   *,
@@ -181,5 +315,6 @@ button {
     animation-duration: 0.001ms !important;
     animation-iteration-count: 1 !important;
     transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
   }
 }

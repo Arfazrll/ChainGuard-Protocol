@@ -2,81 +2,96 @@ import { ChangeDetectionStrategy, Component, computed, input } from '@angular/co
 import { AuditStatus, RiskBand, RiskScore } from '../core/models';
 import { short } from '../core/format';
 
-/** Band → label and glyph. Colour is never the only carrier (dataviz rule). */
-const BAND: Record<RiskBand, { label: string; glyph: string }> = {
-  critical: { label: 'Critical', glyph: '◆' },
-  high: { label: 'High', glyph: '▲' },
-  elevated: { label: 'Elevated', glyph: '●' },
-  low: { label: 'Low', glyph: '✓' },
+/** Band label. Colour backs it up and is never the only carrier. */
+const BAND: Record<RiskBand, string> = {
+  critical: 'Critical',
+  high: 'High',
+  elevated: 'Elevated',
+  low: 'Low',
 };
 
 /**
- * Protocol health scores (0–100) from the risk-score API, worst first, and
+ * Protocol health scores (0 to 100) from the risk-score API, worst first, and
  * the state of the tamper-evident audit chain behind them.
  */
 @Component({
   selector: 'cg-risk-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="head">
+    <header class="panel-head">
       <h2>Protocol risk</h2>
-      <span class="model mono">{{ model() }}</span>
+      @if (model()) { <span class="panel-meta">Model <span class="mono">{{ model() }}</span></span> }
     </header>
 
     @if (rows().length === 0) {
-      <p class="empty">No scores yet.</p>
+      <p class="empty">No scores yet. Scores appear once the first block is processed.</p>
     } @else {
       <ul class="list">
         @for (s of rows(); track s.protocol) {
           <li class="row band--{{ s.band }}">
             <span class="name">{{ s.protocol }}</span>
-            <span class="score mono" [attr.aria-label]="s.protocol + ' score ' + s.score + ' of 100'">{{ s.score }}</span>
-            <span class="band"><i aria-hidden="true">{{ bands[s.band].glyph }}</i>{{ bands[s.band].label }}</span>
-            <span class="meter" aria-hidden="true"><span class="fill" [style.width.%]="s.score"></span></span>
-            <span class="why">{{ why(s) }}</span>
+            <span class="score num" [attr.aria-label]="s.protocol + ' score ' + s.score + ' of 100'">{{ s.score }}</span>
+            <span class="band">{{ bands[s.band] }}</span>
+            <span class="meter" aria-hidden="true"><span class="fill" [style.width.%]="s.score < 2 ? 2 : s.score"></span></span>
+            @if (s.band !== 'low') { <span class="why">{{ why(s) }}</span> }
           </li>
         }
       </ul>
+      @if (healthy() > 0) {
+        <p class="foot">Protocols at Low have no open alerts and no broken invariants.</p>
+      }
     }
 
-    <p class="audit audit--{{ auditState() }}" role="status">
+    <div class="audit audit--{{ auditState() }}" role="status">
+      <h3>Audit chain</h3>
       @switch (auditState()) {
         @case ('valid') {
-          <span aria-hidden="true">✓</span> Audit chain verified: {{ audit()!.entries }} entries, head
-          <span class="mono">{{ short(audit()!.head, 8, 6) }}</span>
+          <p><strong>Verified.</strong> {{ audit()!.entries }} entries, every link intact.</p>
+          <p class="head">Latest hash <span class="mono">{{ short(audit()!.head, 10, 8) }}</span></p>
         }
         @case ('broken') {
-          <span aria-hidden="true">◆</span> Audit chain broken at entry {{ audit()!.broken_at }}: {{ audit()!.reason }}
+          <p><strong>Broken at entry {{ audit()!.broken_at }}.</strong> {{ audit()!.reason }}</p>
         }
-        @default { Audit chain status unavailable }
+        @default { <p>Status unavailable. The engine has not reported the audit chain yet.</p> }
       }
-    </p>
+    </div>
   `,
   styles: `
     :host { display: block; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-    .head h2 { font: 600 16px/1.2 var(--font-display); letter-spacing: -0.01em; margin: 0; }
-    .model { color: var(--ink-3); font-size: 11.5px; }
     .list { list-style: none; margin: 0; padding: 0; }
-    .row { display: grid; grid-template-columns: 1fr 40px 96px; grid-template-areas: 'name score band' 'meter meter meter' 'why why why'; gap: 3px 10px; align-items: baseline; padding: 7px 0; border-bottom: 1px solid var(--hairline); font-size: 13px; }
-    .name { grid-area: name; text-transform: capitalize; color: var(--ink-1); }
-    .score { grid-area: score; text-align: right; font-size: 14px; color: var(--ink-1); }
-    .band { grid-area: band; color: var(--ink-2); font-size: 12px; white-space: nowrap; }
-    .band i { font-style: normal; margin-right: 5px; }
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 44px 76px;
+      grid-template-areas: 'name score band' 'meter meter meter' 'why why why';
+      gap: 4px 12px;
+      align-items: baseline;
+      padding: 10px 0;
+      border-top: 1px solid var(--rule-soft);
+      font-size: 13.5px;
+    }
+    .row:first-child { border-top: 0; padding-top: 0; }
+    .name { grid-area: name; text-transform: capitalize; font-weight: 500; color: var(--ink); }
+    .score { grid-area: score; text-align: right; font-size: 16px; font-weight: 600; color: var(--ink); }
+    .band { grid-area: band; font-size: 12.5px; font-weight: 500; color: var(--ok); white-space: nowrap; }
     .meter { grid-area: meter; height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; }
-    .fill { display: block; height: 100%; border-radius: 4px; background: var(--live); }
-    .why { grid-area: why; color: var(--ink-3); font-size: 11.5px; }
+    .fill { display: block; height: 100%; border-radius: 4px; background: var(--ok); }
+    .why { grid-area: why; color: var(--muted); font-size: 12.5px; }
     .band--elevated .fill { background: var(--sev-medium); }
     .band--elevated .band { color: var(--sev-medium); }
     .band--high .fill { background: var(--sev-high); }
     .band--high .band { color: var(--sev-high); }
     .band--critical .fill { background: var(--sev-critical); }
     .band--critical .band { color: var(--sev-critical); font-weight: 600; }
-    .band--low .band { color: var(--live); }
-    .empty { color: var(--ink-3); margin: 0; font-size: 13px; }
-    .audit { margin: 12px 0 0; font-size: 12px; color: var(--ink-3); overflow-wrap: anywhere; }
-    .audit--valid { color: var(--live); }
-    .audit--broken { color: var(--sev-critical); font-weight: 600; }
+    .empty { color: var(--graphite); margin: 0; font-size: 13px; }
+    .foot { margin: 8px 0 0; color: var(--muted); font-size: 12.5px; }
+    .band--low { padding: 7px 0; }
+    .audit { margin-top: 16px; padding: 14px 16px; border-radius: var(--r-sm); background: var(--surface-2); border: 1px solid var(--rule-soft); font-size: 13px; color: var(--graphite); }
+    .audit h3 { font-size: 13px; color: var(--ink); margin-bottom: 4px; letter-spacing: 0; }
+    .audit p { margin: 0; overflow-wrap: anywhere; }
+    .audit .head { margin-top: 4px; color: var(--muted); font-size: 12.5px; }
+    .audit--valid strong { color: var(--ok); }
+    .audit--broken { background: var(--sev-critical-wash); border-color: transparent; }
+    .audit--broken strong { color: var(--sev-critical); }
   `,
 })
 export class RiskPanel {
@@ -87,6 +102,7 @@ export class RiskPanel {
   protected readonly short = short;
 
   protected readonly rows = computed(() => [...this.scores()].sort((a, b) => a.score - b.score || a.protocol.localeCompare(b.protocol)));
+  protected readonly healthy = computed(() => this.scores().filter((s) => s.band === 'low').length);
   protected readonly model = computed(() => this.scores()[0]?.model ?? '');
   protected readonly auditState = computed(() => {
     const a = this.audit();
@@ -96,10 +112,10 @@ export class RiskPanel {
   protected why(s: RiskScore): string {
     const [alerts, invariants] = s.components;
     const parts = [];
-    if (alerts?.items.length) parts.push(`${alerts.items.length} alert${alerts.items.length === 1 ? '' : 's'} −${Math.round(alerts.deduction)}`);
+    if (alerts?.items.length) parts.push(`${alerts.items.length} open alert${alerts.items.length === 1 ? '' : 's'} (−${Math.round(alerts.deduction)})`);
     const broken = invariants?.items.filter((i) => i.state === 'breached').length ?? 0;
-    if (broken) parts.push(`${broken} invariant${broken === 1 ? '' : 's'} broken −${invariants.deduction}`);
-    parts.push(`confidence ${s.confidence}`);
-    return parts.join(' · ');
+    if (broken) parts.push(`${broken} invariant${broken === 1 ? '' : 's'} broken (−${invariants.deduction})`);
+    if (!parts.length) parts.push('No open alerts');
+    return `${parts.join(', ')}. Confidence ${s.confidence}.`;
   }
 }

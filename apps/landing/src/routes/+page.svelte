@@ -25,7 +25,7 @@
 </script>
 
 <svelte:head>
-	<title>ChainGuard: on-chain risk monitoring you can verify</title>
+	<title>SvlteChain: on-chain risk monitoring you can verify</title>
 	<meta
 		name="description"
 		content="Open-source, read-only risk monitoring for blockchains. Every block confirmed by independent nodes, three detection lanes, risk scores, a tamper-evident audit trail and compliance reports."

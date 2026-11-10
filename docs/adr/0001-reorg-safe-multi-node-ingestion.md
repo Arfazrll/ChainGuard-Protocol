@@ -2,7 +2,7 @@
 
 **Status:** Accepted
 **Date:** 2026-11-10
-**Deciders:** ChainGuard maintainers
+**Deciders:** SvlteChain maintainers
 
 ## Context
 

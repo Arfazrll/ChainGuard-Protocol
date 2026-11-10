@@ -1,1 +1,1 @@
-"""ChainGuard ML lane."""
+"""SvlteChain ML lane."""

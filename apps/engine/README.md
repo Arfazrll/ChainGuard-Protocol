@@ -1,4 +1,4 @@
-# ChainGuard detection engine
+# SvlteChain detection engine
 
 Elixir/Phoenix/Broadway: consumes the ingestion stream, runs the YAML rules in `priv/rules/`, owns the alert lifecycle and fans out to Phoenix Channels, webhooks, PagerDuty and Telegram.
 

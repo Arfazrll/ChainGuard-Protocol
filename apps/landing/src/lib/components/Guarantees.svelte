@@ -6,7 +6,7 @@
 		{
 			title: 'Every block, confirmed twice',
 			body: [
-				'ChainGuard asks at least two independent RPC providers for each block: its header and its complete set of event logs. It only moves on when a strict majority returns them identically, byte for byte.',
+				'SvlteChain asks at least two independent RPC providers for each block: its header and its complete set of event logs. It only moves on when a strict majority returns them identically, byte for byte.',
 				'A node that lags, forks or quietly drops a log is outvoted. If there is no majority, ingestion stops instead of guessing, and the dashboard says why.'
 			],
 			note: 'While collecting this project’s own test data, one public RPC returned an empty answer for a block range that held 21 Chainlink price updates. A monitor reading from that single node would have missed the start of the USDC depeg.'
@@ -14,7 +14,7 @@
 		{
 			title: 'Provisional until it is final',
 			body: [
-				'The newest blocks on a chain can still be replaced by a reorganization. ChainGuard emits records right away but marks them provisional until their block is 64 blocks deep, about 13 minutes on Ethereum.',
+				'The newest blocks on a chain can still be replaced by a reorganization. SvlteChain emits records right away but marks them provisional until their block is 64 blocks deep, about 13 minutes on Ethereum.',
 				'If a block is orphaned, its records are retracted, the canonical ones are emitted, and every alert built on the orphaned block is retracted too. PagerDuty incidents resolve and webhooks receive the retraction.'
 			],
 			note: 'A fork deeper than finality is never papered over: ingestion halts and raises a critical alert about itself.'
@@ -33,7 +33,7 @@
 				'Each alert event and each change to a risk score is written to an append-only log in PostgreSQL. Every entry’s hash covers its contents and the hash of the entry before it, so the log forms a chain.',
 				'The database refuses edits and deletions. Anyone who bypasses that and changes an entry breaks the chain at that point, and verification reports exactly where.'
 			],
-			note: 'The latest hash can be published or recorded outside ChainGuard, which makes rewriting history after that point detectable as well.'
+			note: 'The latest hash can be published or recorded outside SvlteChain, which makes rewriting history after that point detectable as well.'
 		}
 	];
 

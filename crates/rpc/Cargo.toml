@@ -1,6 +1,6 @@
 [package]
 name = "chainguard-rpc"
-description = "Read-only, allowlisted Ethereum JSON-RPC client for ChainGuard"
+description = "Read-only, allowlisted Ethereum JSON-RPC client for SvlteChain"
 version.workspace = true
 edition.workspace = true
 license.workspace = true

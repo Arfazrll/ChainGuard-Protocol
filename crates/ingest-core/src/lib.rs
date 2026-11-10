@@ -1,4 +1,4 @@
-//! # ChainGuard ingestion core
+//! # SvlteChain ingestion core
 //!
 //! Reorg-safe, multi-node-verified ingestion of on-chain events, with no
 //! network I/O of its own. The binary (`chainguard-ingestd`) supplies the
@@ -9,7 +9,7 @@
 //! [`tracker::ReorgTracker`] (provisional window, retract and re-emit on
 //! reorg) → [`record::StreamMessage`]s for the bus.
 //!
-//! ChainGuard is read-only by design: nothing in this crate can sign or send
+//! SvlteChain is read-only by design: nothing in this crate can sign or send
 //! a transaction.
 
 pub mod decode;

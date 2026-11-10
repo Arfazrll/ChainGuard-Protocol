@@ -1,1 +1,1 @@
-"""ChainGuard compliance reports."""
+"""SvlteChain compliance reports."""

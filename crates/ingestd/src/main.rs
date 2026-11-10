@@ -22,7 +22,7 @@ use std::sync::Arc;
 use std::time::{Duration, SystemTime, UNIX_EPOCH};
 
 #[derive(Parser)]
-#[command(version, about = "ChainGuard ingestion daemon (read-only)")]
+#[command(version, about = "SvlteChain ingestion daemon (read-only)")]
 struct Args {
     /// Path to the TOML config.
     #[arg(short, long, default_value = "config/ingestd.toml")]

@@ -14,80 +14,73 @@ const blockDate = (t: number) => new Date(t).toISOString().slice(0, 10);
   template: `
     <section class="tile">
       <h3>Head block</h3>
-      <p class="value">{{ head() ? '#' + int(head()!.number) : '-' }}</p>
+      <p class="value num">{{ head() ? '#' + int(head()!.number) : '-' }}</p>
       <p class="source">{{ headDetail() }}</p>
     </section>
 
     <section class="tile">
+      <h3>Open alerts</h3>
+      <p class="value num">{{ int(openTotal()) }}</p>
+      <p class="source">{{ openLine() }}</p>
+    </section>
+
+    <section class="tile">
       <h3>Records analysed</h3>
-      <p class="value">{{ int(stats()?.counters?.records) }}</p>
+      <p class="value num">{{ int(stats()?.counters?.records) }}</p>
       <p class="source">{{ blocksLine() }}</p>
     </section>
 
     <section class="tile">
-      <h3>Open alerts</h3>
-      <p class="value">{{ int(openTotal()) }}</p>
-      <p class="source sevs">
-        @for (s of shown; track s) {
-          <span class="sev-count sev--{{ s }}" [title]="meta[s].label"><i aria-hidden="true">{{ meta[s].glyph }}</i> {{ meta[s].label }} {{ open()[s] }}</span>
-        }
-      </p>
-    </section>
-
-    <section class="tile">
-      <h3>Pipeline latency</h3>
+      <h3>Pipeline latency, p50</h3>
       @if (stats()?.latency_ms?.pipeline?.samples) {
-        <p class="value">{{ ms(stats()!.latency_ms.pipeline.p50) }}</p>
-        <p class="source">p50 · p95 {{ ms(stats()!.latency_ms.pipeline.p95) }} · ingestd → rules evaluated</p>
+        <p class="value num">{{ ms(stats()!.latency_ms.pipeline.p50) }}</p>
+        <p class="source">p95 {{ ms(stats()!.latency_ms.pipeline.p95) }}, from ingestion to rules evaluated</p>
       } @else {
-        <p class="value withheld">n/a</p>
-        <p class="source">No live blocks yet; replayed history is not counted as latency.</p>
+        <p class="value withheld">Not yet</p>
+        <p class="source">Measured on live blocks only; replayed history does not count.</p>
       }
     </section>
 
     <section class="tile">
-      <h3>Block → detection</h3>
+      <h3>Block to detection, p50</h3>
       @if (stats()?.clock_skew_suspected) {
-        <p class="value withheld">n/a</p>
-        <p class="source warn">Host clock is behind block time, so this figure would be wrong. Check NTP.</p>
+        <p class="value withheld">Withheld</p>
+        <p class="source warn">This machine's clock is behind block time, so the figure would be wrong. Check NTP.</p>
       } @else if (stats()?.latency_ms?.detect?.samples) {
-        <p class="value">{{ ms(stats()!.latency_ms.detect.p50) }}</p>
-        <p class="source">p50 · from block timestamp (±1 s resolution)</p>
+        <p class="value num">{{ ms(stats()!.latency_ms.detect.p50) }}</p>
+        <p class="source">From the block timestamp, which has 1 s resolution</p>
       } @else {
-        <p class="value withheld">n/a</p>
+        <p class="value withheld">Not yet</p>
         <p class="source">Measured on live blocks only.</p>
       }
     </section>
 
     <section class="tile">
       <h3>Reorgs handled</h3>
-      <p class="value">{{ int(stats()?.counters?.reorgs) }}</p>
-      <p class="source">{{ int(stats()?.alerts?.retracted) }} alerts retracted · {{ int(stats()?.alerts?.suppressed) }} rate-limited</p>
+      <p class="value num">{{ int(stats()?.counters?.reorgs) }}</p>
+      <p class="source">{{ int(stats()?.alerts?.retracted) }} alerts retracted, {{ int(stats()?.alerts?.suppressed) }} rate-limited</p>
     </section>
   `,
   styles: `
-    :host { display: grid; grid-template-columns: repeat(auto-fit, minmax(170px, 1fr)); gap: 10px; }
+    :host { display: grid; grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); gap: 12px; }
     .tile {
-      padding: 14px 16px;
-      border-radius: var(--radius);
-      background: var(--glass);
-      backdrop-filter: blur(14px) saturate(140%);
-      border: 1px solid var(--hairline-strong);
       min-width: 0;
-      transition: border-color 0.2s, box-shadow 0.2s;
+      padding: 16px 18px;
+      border-radius: var(--r);
+      background: var(--surface);
+      border: 1px solid var(--rule);
     }
-    .tile:hover { border-color: color-mix(in srgb, var(--brand) 40%, var(--hairline-strong)); box-shadow: 0 0 24px -8px var(--brand-wash); }
-    h3 { margin: 0; font-size: 12px; font-weight: 500; color: var(--ink-3); letter-spacing: 0.01em; }
-    .value { margin: 6px 0 4px; font: 600 26px/1.1 var(--font-display); letter-spacing: -0.03em; color: var(--ink-1); }
-    .withheld { color: var(--ink-3); }
-    .source { margin: 0; font-size: 11.5px; color: var(--ink-3); line-height: 1.4; }
-    .warn { color: var(--ink-2); }
-    .sevs { display: flex; flex-wrap: wrap; gap: 2px 10px; }
-    .sev-count i { font-style: normal; }
-    .sev-count.sev--critical i { color: var(--sev-critical); }
-    .sev-count.sev--high i { color: var(--sev-high); }
-    .sev-count.sev--medium i { color: var(--sev-medium); }
-    .sev-count.sev--low i { color: var(--sev-low); }
+    h3 { font-size: 13px; font-weight: 500; color: var(--graphite); letter-spacing: 0; }
+    .value { margin: 8px 0 4px; font-size: 26px; font-weight: 600; line-height: 1.1; letter-spacing: -0.02em; color: var(--ink); }
+    .withheld { color: var(--muted); font-weight: 500; font-size: 22px; }
+    .source { margin: 0; font-size: 12.5px; color: var(--muted); line-height: 1.45; }
+    .warn { color: var(--sev-medium); }
+    @media (max-width: 600px) {
+      :host { grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
+      .tile { padding: 14px; }
+      .value { font-size: 20px; }
+      .withheld { font-size: 18px; }
+    }
   `,
 })
 export class StatTiles {
@@ -96,27 +89,34 @@ export class StatTiles {
   readonly open = input.required<Record<Severity, number>>();
   readonly now = input.required<number>();
 
-  protected readonly shown: Severity[] = ['critical', 'high', 'medium', 'low'];
-  protected readonly meta = SEVERITY_META;
   protected int = int;
   protected ms = ms;
 
   protected readonly openTotal = computed(() => Object.values(this.open()).reduce((a, b) => a + b, 0));
 
+  /** "2 critical, 1 high", worst first, only severities that are present. */
+  protected readonly openLine = computed(() => {
+    const o = this.open();
+    const parts = (['critical', 'high', 'medium', 'low'] as Severity[])
+      .filter((s) => o[s] > 0)
+      .map((s) => `${o[s]} ${SEVERITY_META[s].label.toLowerCase()}`);
+    return parts.length ? parts.join(', ') : 'Nothing open';
+  });
+
   protected readonly headDetail = computed(() => {
     const h = this.head();
-    if (!h) return 'waiting for the first block';
+    if (!h) return 'Waiting for the first block';
     const nodes = `${h.attested_by.length} node${h.attested_by.length === 1 ? '' : 's'} agreed`;
     const t = h.timestamp * 1000;
-    const when = this.now() - t > 86_400_000 ? `${blockDate(t)} (replay)` : ago(t, Math.max(this.now(), t));
-    return `${when} · ${nodes}`;
+    const when = this.now() - t > 86_400_000 ? `replay of ${blockDate(t)}` : ago(t, Math.max(this.now(), t));
+    return `${nodes}, ${when}`;
   });
 
   protected readonly blocksLine = computed(() => {
     const c = this.stats()?.counters;
-    if (!c) return 'decoded & enriched';
+    if (!c) return 'Decoded and labeled';
     const live = c.blocks - (c.replayed_blocks ?? 0);
-    const replay = c.replayed_blocks ? ` + ${int(c.replayed_blocks)} replayed` : '';
-    return `${int(live)} live block${live === 1 ? '' : 's'}${replay} · decoded & enriched`;
+    const replay = c.replayed_blocks ? ` and ${int(c.replayed_blocks)} replayed` : '';
+    return `From ${int(live)} live block${live === 1 ? '' : 's'}${replay}`;
   });
 }

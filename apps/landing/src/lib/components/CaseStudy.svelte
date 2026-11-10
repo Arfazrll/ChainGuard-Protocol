@@ -56,7 +56,7 @@
 			<h2 id="case-title" class="h2" data-reveal>The Euler Finance exploit, replayed. <span class="soft">One transaction, six moves, $8.9 million.</span></h2>
 			<p class="lead" data-reveal>
 				On 13 March 2023 an attacker drained Euler Finance through a series of flash-loan transactions. This is one of
-				them, block {EULER_FLOW.block.toLocaleString('en-US')}, captured from two independent providers and replayed through ChainGuard unchanged.<a class="fn" href="#fn-1" aria-label="Footnote 1">1</a>
+				them, block {EULER_FLOW.block.toLocaleString('en-US')}, captured from two independent providers and replayed through SvlteChain unchanged.<a class="fn" href="#fn-1" aria-label="Footnote 1">1</a>
 			</p>
 		</div>
 
@@ -120,10 +120,10 @@
 
 		<div class="outcome" use:reveal>
 			<div class="net" data-reveal>
-				<h3 class="h3">Why ChainGuard counts net, not gross</h3>
+				<h3 class="h3">Why SvlteChain counts net, not gross</h3>
 				<p>
 					A rule that fired on “a large transfer after a flash loan” would page you on every big flash loan, because the
-					lender’s principal always leaves and comes back. ChainGuard nets every priced transfer per protocol across the
+					lender’s principal always leaves and comes back. SvlteChain nets every priced transfer per protocol across the
 					transaction instead.
 				</p>
 				<dl>
@@ -133,7 +133,7 @@
 				<p class="small">Euler’s risk score drops to 0 (critical). Aave’s stays at 100.</p>
 			</div>
 			<div class="alerts" data-reveal>
-				<h3 class="h3">What ChainGuard raised</h3>
+				<h3 class="h3">What SvlteChain raised</h3>
 				<ul>
 					{#each raised as r (r.title)}
 						<li>

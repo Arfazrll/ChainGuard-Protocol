@@ -1,4 +1,4 @@
-# ChainGuard
+# SvlteChain
 
 [![CI](https://github.com/Arfazrll/ChainGuard-Protocol/actions/workflows/ci.yml/badge.svg)](https://github.com/Arfazrll/ChainGuard-Protocol/actions/workflows/ci.yml)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](LICENSE)
@@ -9,9 +9,9 @@
 ![Angular](https://img.shields.io/badge/Angular-22-dd0031?logo=angular&logoColor=white)
 ![SvelteKit](https://img.shields.io/badge/SvelteKit-3-ff3e00?logo=svelte&logoColor=white)
 
-**Real-time on-chain risk and threat monitoring.** ChainGuard watches a blockchain live and verifies every block across independent nodes. It detects attacks and protocol failures as they happen, in three detection lanes, and raises alerts that carry the exact on-chain evidence behind them. Every alert and risk score is written to a tamper-evident audit chain.
+**Real-time on-chain risk and threat monitoring.** SvlteChain watches a blockchain live and verifies every block across independent nodes. It detects attacks and protocol failures as they happen, in three detection lanes, and raises alerts that carry the exact on-chain evidence behind them. Every alert and risk score is written to a tamper-evident audit chain.
 
-**Read-only by design.** ChainGuard never holds a key, never signs and never sends a transaction. It is a watchtower, not a trader. If it were breached, there would be nothing to steal.
+**Read-only by design.** SvlteChain never holds a key, never signs and never sends a transaction. It is a watchtower, not a trader. If it were breached, there would be nothing to steal.
 
 | Milestone | Scope | Status |
 |---|---|---|
@@ -230,7 +230,7 @@ ML alerts are **capped at medium**, enforced twice in the engine and checked by 
 
 Incident fixtures are real mainnet blocks captured by `ingestd` from two independent providers. CI replays them through the full Broadway pipeline on every change, and the Compose job replays them through the containers.
 
-| Incident | What ChainGuard raises |
+| Incident | What SvlteChain raises |
 |---|---|
 | **Euler Finance exploit**, 13 Mar 2023, block 16,817,996 | **Rule:** `flash-loan-drain`, critical. Euler net outflow **$8,904,507** in tx `0xc310…111d`, matching published post-mortems (~8.87M DAI).<br>**Invariant:** `euler-outflow`, critical, on the same tx.<br>**ML:** the same tx, flagged on three dollar features.<br>**Risk score:** Euler 0 (critical); Aave, the lender, 100.<br>Nothing else in the block's 410 records is high or critical. |
 | **USDC depeg**, 11 Mar 2023, blocks 16,802,107 and 16,802,135 | Quiet at Chainlink round 870 ($0.98214, inside the 2% band). At round 871 ($0.97652), exactly one high alert: `USDC/USD at $0.9765: 2.35% off its $1.0000 peg (band 2.00%)`. Circle's score drops to 45 (high). |
@@ -270,7 +270,7 @@ xychart-beta
 | Rules + invariants per block | p50 267 ms, p95 493 ms | 5 rules + 9 invariants, ~1,100 records per block, one Windows dev machine |
 | Pipeline latency (record derived, then rules evaluated) | p50 about 530 to 600 ms | JSONL tail with 250 ms polling; not a benchmark |
 | ML false positives | 2 of ~15,500 transactions in 200 real blocks before the Euler exploit. 1 transaction in the 45 live blocks ($25.1M moved across 30 addresses) | Shipped thresholds, medium severity, rate-limited |
-| Block timestamp to detection | **Not measured** | The dev machine's clock was ~117 s behind. ChainGuard detected the skew and withheld the figure instead of reporting a wrong one |
+| Block timestamp to detection | **Not measured** | The dev machine's clock was ~117 s behind. SvlteChain detected the skew and withheld the figure instead of reporting a wrong one |
 
 ## Run it
 
@@ -396,7 +396,7 @@ These hold in every change. CI enforces 1 to 6.
 4. **Tamper-evident audit trail.** Every alert event and score change is hash-chained and append-only in the database.
 5. **No false urgency.** Dedup, rate limits, evidence on every alert, and an ML lane that never pages.
 6. **Tenant isolation.** Watchlists, routes and keys never cross organizations; private alert channels need the org's key.
-7. **No market-manipulation surface.** ChainGuard reports risk and never acts on it.
+7. **No market-manipulation surface.** SvlteChain reports risk and never acts on it.
 
 ## Documentation
 

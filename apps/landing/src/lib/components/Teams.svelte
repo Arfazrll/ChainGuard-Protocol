@@ -7,7 +7,7 @@
 			name: 'Exchanges',
 			headline: 'Know where a deposit came from before you credit it.',
 			story:
-				'When a protocol is exploited, stolen funds usually reach an exchange deposit address within hours. ChainGuard flags the exploit as it happens and flags transfers through labeled mixers, and alerts that touch your own addresses reach only your team, so you can hold a deposit while it is still pending review.',
+				'When a protocol is exploited, stolen funds usually reach an exchange deposit address within hours. SvlteChain flags the exploit as it happens and flags transfers through labeled mixers, and alerts that touch your own addresses reach only your team, so you can hold a deposit while it is still pending review.',
 			setup: ['Watch your hot and deposit wallets', 'Route critical alerts to your on-call rotation', 'Use risk scores to decide which tokens need extra review'],
 			gets: ['Alerts when watched addresses touch an exploit or a mixer', 'Evidence your compliance team can attach to a case', 'A record of when you were told, kept in the audit chain'],
 			example: { sev: 'low', label: 'Low', text: 'Mixer interaction in a transaction touching a watched deposit address' }
@@ -17,7 +17,7 @@
 			name: 'Funds and treasuries',
 			headline: 'Watch the protocols your positions depend on.',
 			story:
-				'A position is only as safe as the protocol holding it. ChainGuard checks those protocols on every block: whether their stablecoins hold their pegs, whether their oracles are fresh, whether money is leaving faster than normal, and whether an admin key just changed something.',
+				'A position is only as safe as the protocol holding it. SvlteChain checks those protocols on every block: whether their stablecoins hold their pegs, whether their oracles are fresh, whether money is leaving faster than normal, and whether an admin key just changed something.',
 			setup: ['Add the contracts you are exposed to', 'Set outflow limits that match your risk appetite', 'Send alerts to the people who can act'],
 			gets: ['A 0 to 100 score per protocol, with the reasons', 'High-severity alerts only with two-node evidence', 'Retractions when a chain reorganization undoes an event'],
 			example: { sev: 'high', label: 'High', text: 'USDC/USD at $0.9765: 2.35% off its $1.0000 peg' }
@@ -27,7 +27,7 @@
 			name: 'Insurers',
 			headline: 'Incident evidence that holds up in a claim.',
 			story:
-				'Underwriting and claims both depend on knowing exactly what happened and when. Every ChainGuard alert carries the transactions, blocks and independent nodes behind it, and its history is hash-chained so it can be shown to be unaltered months later.',
+				'Underwriting and claims both depend on knowing exactly what happened and when. Every SvlteChain alert carries the transactions, blocks and independent nodes behind it, and its history is hash-chained so it can be shown to be unaltered months later.',
 			setup: ['Watch the protocols you cover', 'Export alerts as compliance PDFs', 'Record the audit head in your own systems'],
 			gets: ['A timestamped record of each incident and its retractions', 'Reports that re-check the audit chain themselves', 'Scores you can track over the life of a policy'],
 			example: { sev: 'critical', label: 'Critical', text: 'Euler Finance net outflow $8,904,507 in a flash-loan transaction' }
@@ -37,7 +37,7 @@
 			name: 'Protocol security teams',
 			headline: 'Get paged on your own contracts, with proof.',
 			story:
-				'Your team knows which properties of your protocol must never break. Write them as invariants, add rules for the attacks you fear most, and ChainGuard pages you with the exact transaction when one is hit, so the people holding your pause key can decide in seconds.',
+				'Your team knows which properties of your protocol must never break. Write them as invariants, add rules for the attacks you fear most, and SvlteChain pages you with the exact transaction when one is hit, so the people holding your pause key can decide in seconds.',
 			setup: ['Write invariants and rules as reviewed YAML', 'Route to PagerDuty, Telegram or a webhook', 'Replay past incidents to test before going live'],
 			gets: ['Alerts on privileged changes, pauses and drains', 'Each rule isolated: one bad rule cannot stop the rest', 'A read-only monitor that holds no key to your protocol'],
 			example: { sev: 'high', label: 'High', text: 'Proxy upgrade on a watched lending pool' }

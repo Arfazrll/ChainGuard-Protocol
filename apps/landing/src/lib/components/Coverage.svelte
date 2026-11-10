@@ -2,7 +2,7 @@
 	import { DOCS } from '#lib/config.ts';
 	import { reveal } from '#lib/motion.ts';
 
-	// From data/labels/ethereum-mainnet.json: public contracts ChainGuard labels today.
+	// From data/labels/ethereum-mainnet.json: public contracts SvlteChain labels today.
 	const names = ['Aave', 'Uniswap', 'Chainlink', 'Balancer', 'Compound', 'Morpho', 'Curve', 'Euler', 'Maker', 'Lido', 'Circle', 'Tether', 'Arbitrum', 'Optimism', 'Base', 'Polygon', 'Wormhole', 'zkSync'];
 </script>
 
@@ -13,7 +13,7 @@
 			{#each names as n (n)}<li>{n}</li>{/each}
 		</ul>
 		<p data-reveal>
-			Named because their public contracts are in ChainGuard's open <a href={DOCS.labels}>label dataset</a>. No
+			Named because their public contracts are in SvlteChain's open <a href={DOCS.labels}>label dataset</a>. No
 			partnership or endorsement is implied. Adding a protocol is a reviewed pull request.
 		</p>
 	</div>

@@ -29,7 +29,7 @@ if url = System.get_env("CHAINGUARD_DATABASE_URL") do
     pool_size: String.to_integer(System.get_env("CHAINGUARD_DB_POOL", "10"))
 end
 
-# --- ChainGuard detection engine ----------------------------------------------
+# --- SvlteChain detection engine ----------------------------------------------
 if config_env() != :test do
   source =
     case System.get_env("CHAINGUARD_SOURCE", "none") do

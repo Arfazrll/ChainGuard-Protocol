@@ -52,7 +52,7 @@
 		{ what: 'Record derived to rules evaluated', value: '~530–600 ms', cond: 'p50, one development machine, file tail polling every 250 ms', fn: 5 },
 		{ what: 'Model false positives', value: '2 of ~15,500', cond: 'Transactions in the 200 real blocks before the Euler exploit', fn: 3 },
 		{ what: 'One-command start', value: '63 s', cond: 'All services healthy with replayed alerts, warm build caches', fn: 6 },
-		{ what: 'Block time to alert', value: 'Not measured', cond: 'The test machine’s clock was 117 s behind; ChainGuard withheld the figure', fn: 5 }
+		{ what: 'Block time to alert', value: 'Not measured', cond: 'The test machine’s clock was 117 s behind; SvlteChain withheld the figure', fn: 5 }
 	];
 </script>
 

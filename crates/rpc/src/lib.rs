@@ -1,6 +1,6 @@
 //! Read-only Ethereum JSON-RPC client (invariant 1).
 //!
-//! ChainGuard never holds keys and never sends transactions. This client
+//! SvlteChain never holds keys and never sends transactions. This client
 //! enforces that in code rather than by convention: every call goes through
 //! [`HttpNode::call`], which refuses any method not on [`ALLOWED_METHODS`]
 //! *before* a byte reaches the network. There is no signer, wallet or
@@ -251,7 +251,7 @@ mod tests {
     use tokio::io::{AsyncReadExt, AsyncWriteExt};
     use tokio::net::TcpListener;
 
-    /// Methods that would let a compromised or buggy ChainGuard move funds,
+    /// Methods that would let a compromised or buggy SvlteChain move funds,
     /// sign, or administer a node.
     const MUST_NEVER_BE_ALLOWED: &[&str] = &[
         "eth_sendRawTransaction",

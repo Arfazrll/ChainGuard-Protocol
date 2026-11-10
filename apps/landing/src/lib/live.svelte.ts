@@ -1,5 +1,5 @@
 /**
- * The landing page's connection to a ChainGuard engine.
+ * The landing page's connection to a SvlteChain engine.
  *
  * If an engine answers (`?engine=` or VITE_ENGINE_URL, default
  * localhost:4000), the stat band and terminal are live over Phoenix

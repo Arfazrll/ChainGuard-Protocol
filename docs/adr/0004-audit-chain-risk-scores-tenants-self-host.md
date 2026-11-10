@@ -2,11 +2,11 @@
 
 **Status:** Accepted
 **Date:** 2026-11-10
-**Deciders:** ChainGuard maintainers
+**Deciders:** SvlteChain maintainers
 
 ## Context
 
-Milestone 4 makes ChainGuard usable by a risk team rather than only readable by an engineer (brief §2, §11, §14):
+Milestone 4 makes SvlteChain usable by a risk team rather than only readable by an engineer (brief §2, §11, §14):
 
 - **Defensible decisions:** every alert and score must be reconstructable and provably unaltered (invariant 4).
 - **A risk-score API** as the product's second face.

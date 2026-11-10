@@ -3,29 +3,29 @@ import { InvariantStatus, MlStatus } from '../core/models';
 import { int, usdCompact } from '../core/format';
 
 const STATE = {
-  ok: { label: 'Holding', glyph: '✓' },
-  breached: { label: 'Broken', glyph: '◆' },
-  warming_up: { label: 'Warming up', glyph: '◌' },
+  ok: 'Holding',
+  breached: 'Broken',
+  warming_up: 'Warming up',
 } as const;
 
 const ML = {
   ok: 'Scoring every block',
-  starting: 'Waiting for first block',
-  degraded: 'Unavailable: skipping blocks, other lanes unaffected',
-  disabled: 'Not configured (CHAINGUARD_ANOMALY_URL)',
+  starting: 'Waiting for the first block',
+  degraded: 'Unavailable. Blocks are skipped by the model; rules and invariants are unaffected.',
+  disabled: 'Not configured (set CHAINGUARD_ANOMALY_URL)',
 } as const;
 
 /**
- * Invariant lane status (one row per monitored property) plus the ML lane's
- * health. State is always a label and a glyph; red only when broken.
+ * Invariant lane status (one row per monitored property) plus the model
+ * lane's health. State is always a label; red only when broken.
  */
 @Component({
   selector: 'cg-invariant-panel',
   changeDetection: ChangeDetectionStrategy.OnPush,
   template: `
-    <header class="head">
+    <header class="panel-head">
       <h2>Invariants</h2>
-      <span class="sum">{{ summary() }}</span>
+      <span class="panel-meta">{{ summary() }}</span>
     </header>
 
     @if (items().length === 0) {
@@ -34,11 +34,9 @@ const ML = {
       <ul class="list">
         @for (i of items(); track i.id) {
           <li class="row state--{{ i.state }}">
-            <span class="state" [title]="i.state === 'warming_up' ? 'No data for this feed or protocol yet' : ''">
-              <i aria-hidden="true">{{ meta[i.state].glyph }}</i>{{ meta[i.state].label }}
-            </span>
-            <span class="name">{{ i.name }}</span>
-            <span class="value mono">{{ value(i) }}</span>
+            <span class="state" [title]="i.state === 'warming_up' ? 'No data for this feed or protocol yet' : ''">{{ meta[i.state] }}</span>
+            <span class="name" [title]="i.name">{{ i.name }}</span>
+            <span class="value num">{{ value(i) }}</span>
             @if (i.kind === 'outflow') {
               <span class="meter" role="meter" [attr.aria-valuenow]="i.value ?? 0" aria-valuemin="0" [attr.aria-valuemax]="i.limit"
                 [attr.aria-label]="i.name + ': ' + value(i)">
@@ -52,31 +50,41 @@ const ML = {
 
     @if (ml(); as m) {
       <p class="ml ml--{{ m.state }}">
-        <strong>ML lane</strong> {{ mlText[m.state] }}
-        @if (m.state === 'ok') { · {{ int(m.blocks_scored) }} blocks · capped at {{ m.severity_ceiling }} }
+        <strong>Model lane.</strong> {{ mlText[m.state] }}
+        @if (m.state === 'ok') { ({{ int(m.blocks_scored) }} blocks so far, alerts capped at {{ m.severity_ceiling }}) }
       </p>
     }
   `,
   styles: `
     :host { display: block; }
-    .head { display: flex; justify-content: space-between; align-items: baseline; margin-bottom: 8px; }
-    .head h2 { font: 600 16px/1.2 var(--font-display); letter-spacing: -0.01em; margin: 0; }
-    .sum { color: var(--ink-3); font-size: 12px; }
-    .list { list-style: none; margin: 0; padding: 0; display: grid; gap: 2px; }
-    .row { display: grid; grid-template-columns: 104px 1fr auto; grid-template-areas: 'state name value' 'meter meter meter'; gap: 2px 10px; align-items: baseline; padding: 6px 0; border-bottom: 1px solid var(--hairline); font-size: 12.5px; }
-    .state { grid-area: state; color: var(--ink-3); white-space: nowrap; }
-    .state i { font-style: normal; margin-right: 5px; }
-    .state--ok .state { color: var(--live); }
+    .list { list-style: none; margin: 0; padding: 0; }
+    .row {
+      display: grid;
+      grid-template-columns: 84px minmax(0, 1fr) auto;
+      grid-template-areas: 'state name value' 'meter meter meter';
+      gap: 4px 12px;
+      align-items: baseline;
+      padding: 8px 0;
+      border-top: 1px solid var(--rule-soft);
+      font-size: 13px;
+    }
+    .row:first-child { border-top: 0; padding-top: 0; }
+    .state { grid-area: state; font-size: 12.5px; font-weight: 500; color: var(--muted); white-space: nowrap; }
+    .state--ok .state { color: var(--ok); }
     .state--breached .state { color: var(--sev-critical); font-weight: 600; }
-    .name { grid-area: name; color: var(--ink-2); min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-    .value { grid-area: value; color: var(--ink-1); font-size: 12px; white-space: nowrap; }
+    .name { grid-area: name; color: var(--ink-2); min-width: 0; }
+    .value { grid-area: value; color: var(--ink); font-size: 12.5px; white-space: nowrap; }
     .meter { grid-area: meter; height: 4px; border-radius: 4px; background: var(--surface-3); overflow: hidden; margin-top: 2px; }
-    .fill { display: block; height: 100%; border-radius: 4px; background: var(--brand); }
+    .fill { display: block; height: 100%; border-radius: 4px; background: var(--series); }
     .state--breached .fill { background: var(--sev-critical); }
-    .empty { color: var(--ink-3); margin: 0; font-size: 13px; }
-    .ml { margin: 12px 0 0; font-size: 12.5px; color: var(--ink-3); }
-    .ml strong { color: var(--ink-2); font-weight: 600; margin-right: 4px; }
+    .empty { color: var(--graphite); margin: 0; font-size: 13px; }
+    .ml { margin: 14px 0 0; padding-top: 12px; border-top: 1px solid var(--rule); font-size: 13px; color: var(--graphite); }
+    .ml strong { color: var(--ink); font-weight: 600; }
     .ml--degraded { color: var(--sev-medium); }
+    @media (max-width: 600px) {
+      .row { grid-template-columns: 84px minmax(0, 1fr); grid-template-areas: 'state name' 'state value' 'meter meter'; }
+      .value { white-space: normal; color: var(--graphite); }
+    }
   `,
 })
 export class InvariantPanel {
@@ -97,18 +105,19 @@ export class InvariantPanel {
     const xs = this.statuses();
     const broken = xs.filter((x) => x.state === 'breached').length;
     const ok = xs.filter((x) => x.state === 'ok').length;
-    return `${broken} broken · ${ok} holding · ${xs.length - broken - ok} warming up`;
+    const warming = xs.length - broken - ok;
+    return `${broken} broken, ${ok} holding${warming ? `, ${warming} warming up` : ''}`;
   });
 
   protected value(i: InvariantStatus): string {
     if (i.value == null) return '-';
     switch (i.kind) {
       case 'peg':
-        return `$${i.value.toFixed(4)} (${((i.deviation ?? 0) * 100).toFixed(2)}% off; band ${(i.limit * 100).toFixed(0)}%)`;
+        return `$${i.value.toFixed(4)}, ${((i.deviation ?? 0) * 100).toFixed(2)}% off (band ${(i.limit * 100).toFixed(0)}%)`;
       case 'oracle':
-        return `$${i.value.toLocaleString('en-US', { maximumFractionDigits: 2 })} · ${i.age_s == null ? '?' : Math.round(i.age_s / 60)} min old`;
+        return `$${i.value.toLocaleString('en-US', { maximumFractionDigits: 2 })}, ${i.age_s == null ? '?' : Math.round(i.age_s / 60)} min old`;
       case 'outflow':
-        return `${usdCompact(Math.max(0, i.value))} / ${usdCompact(i.limit)} per ${i.within_blocks} blocks`;
+        return `${usdCompact(Math.max(0, i.value))} of ${usdCompact(i.limit)} per ${i.within_blocks} blocks`;
     }
   }
 

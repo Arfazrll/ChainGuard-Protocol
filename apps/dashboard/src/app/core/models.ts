@@ -1,4 +1,4 @@
-// Shapes pushed by the ChainGuard engine (apps/engine) over Phoenix Channels
+// Shapes pushed by the SvlteChain engine (apps/engine) over Phoenix Channels
 // and returned by its JSON API. Keep in sync with ChainGuard.Alerts.Alert and
 // ChainGuard.Chain.Server.
 

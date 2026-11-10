@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Enforces ChainGuard's non-negotiable invariants in CI. Fails if the code
+# Enforces SvlteChain's non-negotiable invariants in CI. Fails if the code
 # that guarantees them is removed, weakened, or bypassed:
 #   1. Read-only: no signing/wallet/keystore code or dependencies, and all
 #      node traffic goes through the allowlisted RPC client.

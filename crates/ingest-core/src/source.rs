@@ -114,7 +114,7 @@ pub enum QuorumConfigError {
     #[error("duplicate node id {0}")]
     DuplicateNode(NodeId),
     #[error(
-        "min_agreement = {0} trusts a single node; ChainGuard requires ≥ 2 independent sources \
+        "min_agreement = {0} trusts a single node; SvlteChain requires ≥ 2 independent sources \
          (set allow_single_source only for local development)"
     )]
     SingleSourceForbidden(usize),

@@ -203,7 +203,7 @@ jobs:
           curl -sf -o report.pdf http://localhost:8800/reports/alerts/$id.pdf
           head -c 4 report.pdf | grep -q '%PDF'
           curl -sf http://localhost:4300/ | grep -qi '<app-root'
-          curl -sf http://localhost:4400/ | grep -q 'ChainGuard'
+          curl -sf http://localhost:4400/ | grep -q 'SvlteChain'
       - name: logs on failure
         if: failure()
         run: docker compose -f deploy/compose/docker-compose.yml logs --no-color --tail 200

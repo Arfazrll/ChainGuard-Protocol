@@ -115,7 +115,7 @@ def test_the_report_carries_evidence_lifecycle_and_a_verdict():
     assert "$38,904,507" in t
     assert "drpc, publicnode" in t
     meta = PdfReader(io.BytesIO(pdf)).metadata
-    assert meta.title.startswith("ChainGuard report: Euler Finance")
+    assert meta.title.startswith("SvlteChain report: Euler Finance")
 
 
 def test_an_unverified_trail_is_stated_plainly():
