@@ -23,6 +23,12 @@ end
 config :chain_guard, ChainGuardWeb.Endpoint,
   http: [port: String.to_integer(System.get_env("PORT", "4000"))]
 
+if url = System.get_env("CHAINGUARD_DATABASE_URL") do
+  config :chain_guard, ChainGuard.Repo,
+    url: url,
+    pool_size: String.to_integer(System.get_env("CHAINGUARD_DB_POOL", "10"))
+end
+
 # --- ChainGuard detection engine ----------------------------------------------
 if config_env() != :test do
   source =

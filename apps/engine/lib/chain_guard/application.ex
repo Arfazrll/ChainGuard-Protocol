@@ -9,7 +9,9 @@ defmodule ChainGuard.Application do
       [
         ChainGuardWeb.Telemetry,
         {DNSCluster, query: Application.get_env(:chain_guard, :dns_cluster_query) || :ignore},
+        ChainGuard.Repo,
         {Phoenix.PubSub, name: ChainGuard.PubSub},
+        ChainGuardWeb.RateLimit,
         {Registry, keys: :unique, name: ChainGuard.Rules.Registry},
         {Registry, keys: :unique, name: ChainGuard.Invariants.Registry},
         {Registry, keys: :unique, name: ChainGuard.Chain.Registry},
@@ -17,12 +19,17 @@ defmodule ChainGuard.Application do
         ChainGuard.Stats,
         ChainGuard.Ingest.DeadLetter,
         ChainGuard.Alerts.Manager,
+        # Invariant 4: every alert event and score change, hash-chained in PostgreSQL.
+        ChainGuard.Audit.Writer,
         # One supervised process per rule: a crashing rule restarts alone.
         ChainGuard.Rules.Supervisor,
         # One supervised process per invariant (per protocol, per property).
         ChainGuard.Invariants.Supervisor,
         # ML lane client: off the hot path, degrades to "unavailable".
         ChainGuard.Anomaly,
+        ChainGuard.Risk.Server,
+        # Invariant 6: public alerts reach only the orgs whose watchlists they touch.
+        ChainGuard.Tenants.Matcher,
         {DynamicSupervisor, name: ChainGuard.Chain.Supervisor, strategy: :one_for_one},
         ChainGuardWeb.Endpoint
       ] ++ pipeline()

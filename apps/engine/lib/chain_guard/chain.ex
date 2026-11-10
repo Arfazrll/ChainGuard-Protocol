@@ -250,10 +250,12 @@ defmodule ChainGuard.Chain.Server do
         do: %{rule_eval: eval_ms},
         else: %{ingest: ingest_lag, detect: detect_lag, pipeline: pipeline, rule_eval: eval_ms}
 
-    Stats.block(s.chain_id, p.block, length(ctx.records), length(alerts), latencies)
     Stats.incr(:txs, map_size(ctx.txs))
     Stats.incr(:usd_observed, round(Flows.priced_volume(ctx.records)))
     if replayed, do: Stats.incr(:replayed_blocks)
+    # Last: readers wait on the block counter, so every other counter for
+    # this block must already be in.
+    Stats.block(s.chain_id, p.block, length(ctx.records), length(alerts), latencies)
 
     summary = %{
       number: p.block["number"],
@@ -275,6 +277,7 @@ defmodule ChainGuard.Chain.Server do
 
     broadcast(s.chain_id, "block", summary)
     broadcast(s.chain_id, "invariants", %{statuses: Invariants.statuses()})
+    ChainGuard.Risk.Server.recompute()
 
     %{
       s

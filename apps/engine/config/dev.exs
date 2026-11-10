@@ -1,5 +1,14 @@
 import Config
 
+# Local PostgreSQL (see scripts/up.sh). CHAINGUARD_DATABASE_URL overrides.
+config :chain_guard, ChainGuard.Repo,
+  username: "chainguard",
+  password: "chainguard",
+  hostname: "localhost",
+  database: "chain_guard_dev",
+  pool_size: 10,
+  show_sensitive_data_on_connection_error: true
+
 # For development, we disable any cache and enable
 # debugging and code reloading.
 #

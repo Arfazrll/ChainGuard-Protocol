@@ -34,6 +34,7 @@
   <div class="grid">
     <cg-alert-feed class="panel" [alerts]="live.alerts()" [fresh]="live.fresh()" [now]="now()" />
     <div class="side">
+      <cg-risk-panel class="panel" [scores]="live.scores()" [audit]="live.audit()" />
       <cg-invariant-panel class="panel" [statuses]="live.invariants()" [ml]="live.ml()" />
       <cg-block-stream [blocks]="live.blocks()" [reorgs]="live.reorgs()" />
       <cg-records-chart class="panel" [blocks]="live.blocks()" />

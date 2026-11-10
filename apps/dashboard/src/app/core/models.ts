@@ -172,4 +172,27 @@ export interface ReorgEvent {
   at_ms: number;
 }
 
+export type RiskBand = 'low' | 'elevated' | 'high' | 'critical';
+
+export interface RiskScore {
+  protocol: string;
+  score: number;
+  band: RiskBand;
+  confidence: 'high' | 'medium' | 'low';
+  model: string;
+  components: [
+    { name: 'alerts'; deduction: number; cap: number; items: { alert_id: string; rule_id: string; severity: Severity; points: number }[] },
+    { name: 'invariants'; deduction: number; cap: number; items: { invariant_id: string; state: InvariantState }[] },
+  ];
+  as_of_ms?: number;
+}
+
+export interface AuditStatus {
+  valid: boolean;
+  entries?: number;
+  head?: string;
+  broken_at?: number;
+  reason?: string;
+}
+
 export type ConnectionState = 'connecting' | 'live' | 'reconnecting' | 'offline';

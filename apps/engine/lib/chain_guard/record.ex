@@ -69,7 +69,8 @@ defmodule ChainGuard.Record do
       kind: get(r, "kind"),
       event: r["event"],
       value_usd: get(r, "value_usd"),
-      labels: Enum.map(labels(r), &Map.take(&1, ["role", "address", "name", "category"])),
+      labels:
+        Enum.map(labels(r), &Map.take(&1, ["role", "address", "name", "category", "protocol"])),
       attested_by: Map.get(r, "attested_by", [])
     }
   end

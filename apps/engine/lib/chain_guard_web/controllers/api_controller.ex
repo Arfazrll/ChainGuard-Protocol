@@ -33,7 +33,8 @@ defmodule ChainGuardWeb.ApiController do
     %{
       rules: %{state: :ok, loaded: length(Rules.list())},
       invariants: %{state: :ok, loaded: length(Invariants.list())},
-      ml: Anomaly.status()
+      ml: Anomaly.status(),
+      audit: ChainGuard.Audit.Writer.status()
     }
   end
 

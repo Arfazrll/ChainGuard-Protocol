@@ -1,5 +1,14 @@
 import Config
 
+# Each test runs in a transaction that is rolled back (Ecto SQL sandbox).
+config :chain_guard, ChainGuard.Repo,
+  username: System.get_env("PGUSER", "chainguard"),
+  password: System.get_env("PGPASSWORD", "chainguard"),
+  hostname: System.get_env("PGHOST", "localhost"),
+  database: "chain_guard_test#{System.get_env("MIX_TEST_PARTITION")}",
+  pool: Ecto.Adapters.SQL.Sandbox,
+  pool_size: System.schedulers_online() * 2
+
 # We don't run a server during test. If one is required,
 # you can enable the server option below.
 config :chain_guard, ChainGuardWeb.Endpoint,
@@ -18,3 +27,7 @@ config :phoenix, :plug_init_mode, :runtime
 # Sort query params output of verified routes for robust url comparisons
 config :phoenix,
   sort_verified_routes_query_params: true
+
+# The audit writer is switched on per test (ChainGuard.DataCase.enable_audit/1),
+# so tests that do not touch the database never need a sandbox.
+config :chain_guard, :audit, false

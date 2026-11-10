@@ -51,7 +51,10 @@ defmodule ChainGuard.MixProject do
       # Rules are data: community-writable YAML
       {:yaml_elixir, "~> 2.12"},
       # Alert connectors (webhook)
-      {:req, "~> 0.7.5"}
+      {:req, "~> 0.7.5"},
+      # Audit chain, tenants and API keys (PostgreSQL)
+      {:ecto_sql, "~> 3.14"},
+      {:postgrex, "~> 0.22.4"}
     ]
   end
 
@@ -63,7 +66,10 @@ defmodule ChainGuard.MixProject do
   # See the documentation for `Mix` for more info on aliases.
   defp aliases do
     [
-      setup: ["deps.get"],
+      setup: ["deps.get", "ecto.setup"],
+      "ecto.setup": ["ecto.create", "ecto.migrate"],
+      "ecto.reset": ["ecto.drop", "ecto.setup"],
+      test: ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
       precommit: ["compile --warnings-as-errors", "deps.unlock --unused", "format", "test"]
     ]
   end

@@ -8,7 +8,8 @@
 import Config
 
 config :chain_guard,
-  generators: [timestamp_type: :utc_datetime]
+  ecto_repos: [ChainGuard.Repo],
+  generators: [timestamp_type: :utc_datetime, binary_id: true]
 
 # Configure the endpoint
 config :chain_guard, ChainGuardWeb.Endpoint,

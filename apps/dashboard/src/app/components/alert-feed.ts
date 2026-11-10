@@ -2,6 +2,7 @@ import { ChangeDetectionStrategy, Component, computed, input, signal } from '@an
 import { Alert, Severity } from '../core/models';
 import { SEVERITY_ORDER, filterAlerts, openBySeverity } from '../core/state';
 import { SEVERITY_META, ago, explorerTx, kindLabel, short, usdCompact } from '../core/format';
+import { reportUrl } from '../core/live.service';
 
 const STATUS_META = {
   provisional: { label: 'Provisional', glyph: '◌', hint: 'Evidence is in a block that could still be reorged' },
@@ -79,6 +80,10 @@ const LANE_META = {
               }
               @if (a.occurrences > 1) { <span>×{{ a.occurrences }}</span> }
               <span>{{ since(a.first_seen_ms) }}</span>
+              @if (!a.system) {
+                <a class="report" [href]="report + '/reports/alerts/' + a.id + '.pdf'" target="_blank" rel="noopener"
+                  title="Compliance report with evidence and the audit-chain check">PDF report</a>
+              }
             </div>
 
             @for (n of a.notes; track $index) {
@@ -151,6 +156,8 @@ const LANE_META = {
     .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; color: var(--ink-3); font-size: 12.5px; }
     .meta .mono { font-size: 12px; }
     .verified { color: var(--live); }
+    .report { color: var(--brand-ink); text-decoration: none; }
+    .report:hover { text-decoration: underline; }
     .lane { color: var(--ink-2); border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 0 7px; font-size: 11.5px; line-height: 17px; }
     .note { margin: 8px 0 0; padding: 6px 10px; border-left: 2px solid var(--sev-medium); color: var(--ink-2); font-size: 12.5px; background: var(--surface-2); border-radius: 0 6px 6px 0; }
     .expand { margin-top: 10px; background: none; border: 0; padding: 0; color: var(--brand-ink); cursor: pointer; font-size: 12.5px; }
@@ -179,6 +186,7 @@ export class AlertFeed {
   protected readonly meta = SEVERITY_META;
   protected readonly status = STATUS_META;
   protected readonly lanes = LANE_META;
+  protected readonly report = reportUrl();
   protected readonly active = signal<ReadonlySet<Severity>>(new Set(SEVERITY_ORDER));
   protected readonly showRetracted = signal(true);
   protected readonly open = signal<ReadonlySet<string>>(new Set());

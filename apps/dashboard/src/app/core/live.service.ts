@@ -1,7 +1,7 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Channel, Socket } from 'phoenix';
 import { Observable, Subject, catchError, from, map, merge, of, switchMap, timer } from 'rxjs';
-import { Alert, BlockSummary, ConnectionState, InvariantStatus, MlStatus, ReorgEvent, Stats } from './models';
+import { Alert, AuditStatus, BlockSummary, ConnectionState, InvariantStatus, MlStatus, ReorgEvent, RiskScore, Stats } from './models';
 import { FlowBlock, dropFlowBlock, openBySeverity, pushBlock, pushFlowBlock, setBlockStatus, upsertAlert } from './state';
 
 /** Where the engine lives: `?engine=` wins, then a global, then localhost. */
@@ -9,6 +9,12 @@ export function engineUrl(): string {
   const fromQuery = new URLSearchParams(globalThis.location?.search ?? '').get('engine');
   const fromGlobal = (globalThis as { CHAINGUARD_ENGINE?: string }).CHAINGUARD_ENGINE;
   return (fromQuery || fromGlobal || 'http://localhost:4000').replace(/\/$/, '');
+}
+
+/** The compliance report service (services/report): `?report=` wins, then localhost. */
+export function reportUrl(): string {
+  const fromQuery = new URLSearchParams(globalThis.location?.search ?? '').get('report');
+  return (fromQuery || 'http://localhost:8800').replace(/\/$/, '');
 }
 
 /** A Phoenix channel event as an Observable (unsubscribing detaches the handler). */
@@ -41,6 +47,9 @@ export class LiveService {
   readonly flowBlocks = signal<FlowBlock[]>([]);
   readonly invariants = signal<InvariantStatus[]>([]);
   readonly ml = signal<MlStatus | null>(null);
+  readonly scores = signal<RiskScore[]>([]);
+  /** Result of re-deriving the whole audit hash chain on the engine. */
+  readonly audit = signal<AuditStatus | null>(null);
   /** Ids of alerts that arrived during this session (for the entrance cue). */
   readonly fresh = signal<ReadonlySet<string>>(new Set());
 
@@ -85,6 +94,7 @@ export class LiveService {
         this.flowBlocks.update((w) => dropFlowBlock(w, block.hash));
       }),
       on<{ statuses: InvariantStatus[] }>(live, 'invariants').subscribe(({ statuses }) => this.invariants.set(statuses)),
+      on<{ scores: RiskScore[] }>(live, 'scores').subscribe(({ scores }) => this.scores.set(scores)),
       on<Omit<ReorgEvent, 'at_ms'>>(live, 'reorg').subscribe((r) =>
         this.reorgs.update((xs) => [{ ...r, at_ms: Date.now() }, ...xs].slice(0, 20)),
       ),
@@ -111,10 +121,22 @@ export class LiveService {
           ),
         )
         .subscribe((l) => l && this.ml.set(l.ml)),
+
+      // The audit chain is re-verified on the engine; a 409 means broken.
+      timer(0, 30_000)
+        .pipe(
+          switchMap(() =>
+            from(fetch(`${this.engine}/api/audit/verify`).then((r) => (r.status === 200 || r.status === 409 ? (r.json() as Promise<AuditStatus>) : null))).pipe(
+              catchError(() => of(null)),
+            ),
+          ),
+        )
+        .subscribe((a) => this.audit.set(a)),
     ];
 
     alerts.join().receive('ok', (reply: { alerts: Alert[] }) => this.alerts.set(reply.alerts ?? []));
-    live.join().receive('ok', (reply: { stats: Stats; blocks: BlockSummary[]; flows?: FlowBlock[]; invariants?: InvariantStatus[]; ml?: MlStatus }) => {
+    live.join().receive('ok', (reply: { stats: Stats; blocks: BlockSummary[]; flows?: FlowBlock[]; invariants?: InvariantStatus[]; ml?: MlStatus; scores?: RiskScore[] }) => {
+      this.scores.set(reply.scores ?? []);
       this.stats.set(reply.stats);
       this.blocks.set(reply.blocks ?? []);
       this.flowBlocks.set(reply.flows ?? []);

@@ -29,8 +29,9 @@ defmodule ChainGuard.Alerts.Fanout do
 
   @default_events [:raised, :retracted]
 
-  def dispatch(event, alert) do
-    for {mod, opts} <- connectors(), wants?(event, alert, opts) do
+  @doc "Deliver to the global connectors, or to an explicit list (an org's routes)."
+  def dispatch(event, alert, connectors \\ connectors()) do
+    for {mod, opts} <- connectors, wants?(event, alert, opts) do
       Task.Supervisor.start_child(ChainGuard.TaskSupervisor, fn ->
         deliver(mod, event, alert, opts)
       end)
