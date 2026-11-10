@@ -1,17 +1,17 @@
 /**
- * Motion, disciplined: every effect here is opt-out through
- * `prefers-reduced-motion`, and content is fully visible without JS.
+ * Motion, disciplined: everything here is opt-out through
+ * `prefers-reduced-motion`, and every section reads fine without JS.
  */
 
 export const reducedMotion = () =>
 	typeof matchMedia !== 'undefined' && matchMedia('(prefers-reduced-motion: reduce)').matches;
 
-/** Fade + small rise as a section enters; children marked `data-reveal` stagger. */
+/** Fade + small rise as content enters; children marked `data-reveal` stagger. */
 export function reveal(node: HTMLElement) {
 	const items = [node, ...node.querySelectorAll<HTMLElement>('[data-reveal]')].filter((el) =>
 		el.hasAttribute('data-reveal')
 	);
-	items.forEach((el, i) => el.style.setProperty('--i', String(el.dataset.revealIndex ?? i)));
+	items.forEach((el, i) => el.style.setProperty('--i', String(el.dataset.revealIndex ?? i % 6)));
 	if (reducedMotion() || typeof IntersectionObserver === 'undefined') {
 		items.forEach((el) => el.classList.add('in'));
 		return {};
@@ -25,30 +25,49 @@ export function reveal(node: HTMLElement) {
 				}
 			}
 		},
-		{ rootMargin: '0px 0px -10% 0px', threshold: 0.12 }
+		{ rootMargin: '0px 0px -8% 0px', threshold: 0.1 }
 	);
 	items.forEach((el) => io.observe(el));
 	return { destroy: () => io.disconnect() };
 }
 
-/** The primary CTA leans toward the pointer (fine pointers only). */
-export function magnetic(node: HTMLElement, strength = 0.28) {
-	if (reducedMotion() || !matchMedia('(pointer: fine)').matches) return {};
-	const radius = 90;
-	const move = (e: PointerEvent) => {
+/**
+ * Calls `cb(progress)` on scroll, where progress goes 0 → 1 while the
+ * element travels from `start` (fraction of viewport height from the top,
+ * measured at the element's top) to `end`. One rAF per frame at most.
+ */
+export function scrollProgress(
+	node: HTMLElement,
+	params: { cb: (p: number) => void; start?: number; end?: number }
+) {
+	let { cb, start = 1, end = 0.25 } = params;
+	let raf = 0;
+	const measure = () => {
+		raf = 0;
 		const r = node.getBoundingClientRect();
-		const dx = e.clientX - (r.left + r.width / 2);
-		const dy = e.clientY - (r.top + r.height / 2);
-		const near = Math.hypot(dx, dy) < Math.max(r.width, r.height) / 2 + radius;
-		node.style.transform = near ? `translate(${dx * strength}px, ${dy * strength}px)` : '';
+		const vh = window.innerHeight;
+		const p = (start * vh - r.top) / ((start - end) * vh);
+		cb(Math.min(1, Math.max(0, p)));
 	};
-	const leave = () => (node.style.transform = '');
-	window.addEventListener('pointermove', move, { passive: true });
-	node.addEventListener('pointerleave', leave);
+	const onScroll = () => {
+		if (!raf) raf = requestAnimationFrame(measure);
+	};
+	if (reducedMotion()) {
+		cb(1);
+		return {};
+	}
+	measure();
+	window.addEventListener('scroll', onScroll, { passive: true });
+	window.addEventListener('resize', onScroll);
 	return {
+		update(next: typeof params) {
+			({ cb, start = 1, end = 0.25 } = next);
+			onScroll();
+		},
 		destroy() {
-			window.removeEventListener('pointermove', move);
-			node.removeEventListener('pointerleave', leave);
+			cancelAnimationFrame(raf);
+			window.removeEventListener('scroll', onScroll);
+			window.removeEventListener('resize', onScroll);
 		}
 	};
 }
@@ -58,10 +77,7 @@ export interface CountUp {
 	format: (v: number) => string;
 }
 
-/**
- * Counts up to `value` when first in view, then animates between later
- * values (live updates). Text is always the final value for assistive tech.
- */
+/** Counts up to `value` when first in view, then animates between later values. */
 export function countUp(node: HTMLElement, params: CountUp) {
 	let p = params;
 	let shown = 0;
@@ -77,12 +93,11 @@ export function countUp(node: HTMLElement, params: CountUp) {
 			return;
 		}
 		const from = shown;
-		const start = performance.now();
-		const dur = from === 0 ? 1400 : 600;
+		const startT = performance.now();
+		const dur = from === 0 ? 1200 : 500;
 		const tick = (t: number) => {
-			const k = Math.min(1, (t - start) / dur);
-			const eased = 1 - Math.pow(1 - k, 3);
-			shown = from + (to - from) * eased;
+			const k = Math.min(1, (t - startT) / dur);
+			shown = from + (to - from) * (1 - Math.pow(1 - k, 3));
 			node.textContent = p.format(shown);
 			if (k < 1) raf = requestAnimationFrame(tick);
 		};

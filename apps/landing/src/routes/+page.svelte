@@ -1,15 +1,19 @@
 <script lang="ts">
 	import { onMount } from 'svelte';
-	import Builders from '#lib/components/Builders.svelte';
-	import FlowPreview from '#lib/components/FlowPreview.svelte';
+	import Activity from '#lib/components/Activity.svelte';
+	import CaseStudy from '#lib/components/CaseStudy.svelte';
+	import Closing from '#lib/components/Closing.svelte';
+	import Coverage from '#lib/components/Coverage.svelte';
+	import Developers from '#lib/components/Developers.svelte';
+	import Faq from '#lib/components/Faq.svelte';
 	import Footer from '#lib/components/Footer.svelte';
+	import Guarantees from '#lib/components/Guarantees.svelte';
 	import Hero from '#lib/components/Hero.svelte';
-	import Lanes from '#lib/components/Lanes.svelte';
+	import LaneStack from '#lib/components/LaneStack.svelte';
 	import Nav from '#lib/components/Nav.svelte';
-	import Pipeline from '#lib/components/Pipeline.svelte';
-	import StatBand from '#lib/components/StatBand.svelte';
-	import Terminal from '#lib/components/Terminal.svelte';
-	import TrustWall from '#lib/components/TrustWall.svelte';
+	import Platform from '#lib/components/Platform.svelte';
+	import Security from '#lib/components/Security.svelte';
+	import Teams from '#lib/components/Teams.svelte';
 	import { live } from '#lib/live.svelte.ts';
 
 	onMount(() => {
@@ -21,10 +25,10 @@
 </script>
 
 <svelte:head>
-	<title>ChainGuard: real-time on-chain risk monitoring</title>
+	<title>ChainGuard: on-chain risk monitoring you can verify</title>
 	<meta
 		name="description"
-		content="Open-source, read-only watchtower for on-chain risk. Multi-node verified, reorg-safe, with rules, per-protocol invariants and ML anomaly detection."
+		content="Open-source, read-only risk monitoring for blockchains. Every block confirmed by independent nodes, three detection lanes, risk scores, a tamper-evident audit trail and compliance reports."
 	/>
 </svelte:head>
 
@@ -32,13 +36,17 @@
 <Nav />
 <main id="main">
 	<Hero />
-	<StatBand />
-	<Terminal />
-	<Pipeline />
-	<TrustWall />
-	<FlowPreview />
-	<Lanes />
-	<Builders />
+	<Activity />
+	<Coverage />
+	<Guarantees />
+	<LaneStack />
+	<CaseStudy />
+	<Platform />
+	<Teams />
+	<Security />
+	<Developers />
+	<Faq />
+	<Closing />
 </main>
 <Footer />
 
@@ -47,10 +55,11 @@
 		position: absolute;
 		left: -999px;
 		top: 8px;
-		z-index: 50;
-		padding: 8px 14px;
-		border-radius: 8px;
-		background: var(--surface-3);
+		z-index: 60;
+		padding: 10px 16px;
+		border-radius: 10px;
+		background: var(--ink);
+		color: #fff;
 	}
 	.skip:focus {
 		left: 8px;

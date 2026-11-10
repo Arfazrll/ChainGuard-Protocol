@@ -1,119 +1,87 @@
 <script lang="ts">
-	import { DOCS } from '#lib/config.ts';
-	import { magnetic, reveal } from '#lib/motion.ts';
-	import AlertCard from './AlertCard.svelte';
-	import HeroField from './HeroField.svelte';
+	import { reveal, scrollProgress } from '#lib/motion.ts';
+	import ProductWindow from './ProductWindow.svelte';
+
+	// 0 when the window first enters, 1 once it sits in the upper part of the screen.
+	let p = $state(0);
+	const tilt = $derived(18 * (1 - p));
+	const scale = $derived(0.92 + 0.08 * p);
 </script>
 
 <section class="hero">
-	<div class="atmosphere" aria-hidden="true">
-		<div class="bloom bloom--violet b1"></div>
-		<div class="bloom bloom--green b2"></div>
-		<HeroField />
+	<div class="wrap copy" use:reveal>
+		<h1 class="display" data-reveal>
+			Watch every block.
+			<span class="soft">Trust no single node.</span>
+		</h1>
+		<p class="lead" data-reveal>
+			ChainGuard is open-source risk monitoring for blockchains. It confirms every block with independent nodes,
+			detects exploits and protocol failures as they happen, and backs each alert with on-chain evidence your risk
+			team can check for itself.
+		</p>
+		<div class="ctas" data-reveal>
+			<a class="btn btn-primary" href="#developers">Get started</a>
+			<a class="btn btn-secondary" href="#case-study">See the Euler replay</a>
+		</div>
+		<p class="assure" data-reveal>
+			Read-only by design. ChainGuard holds no keys, signs nothing and never sends a transaction.
+			<a href="#security">How that is enforced</a>
+		</p>
 	</div>
 
-	<div class="wrap grid" use:reveal>
-		<div class="copy">
-			<p class="eyebrow" data-reveal>Open source · read-only · Ethereum mainnet</p>
-			<h1 data-reveal>Watch every block.<br /><span class="accent">Trust no single node.</span></h1>
-			<p class="lede" data-reveal>
-				ChainGuard is a real-time watchtower for on-chain risk. It confirms every block across
-				independent nodes, survives reorgs, and raises alerts from three detection lanes with the
-				exact on-chain evidence behind each one.
-			</p>
-			<div class="ctas" data-reveal>
-				<a class="btn btn--primary" href={DOCS.run} use:magnetic>
-					Run it locally <span class="arrow" aria-hidden="true">→</span>
-				</a>
-				<a class="btn" href="#live">View live demo</a>
-			</div>
-			<p class="fine" data-reveal>
-				<span aria-hidden="true">✓</span> No keys. No signing. No transactions, ever. A watchtower, not a trader.
-			</p>
+	<div class="stage" use:scrollProgress={{ cb: (v) => (p = v), start: 0.95, end: 0.2 }}>
+		<div class="tilt" style="transform: perspective(2200px) rotateX({tilt}deg) scale({scale});">
+			<ProductWindow />
 		</div>
-		<div class="card-slot" data-reveal data-reveal-index="3">
-			<AlertCard />
-		</div>
+		<p class="caption">
+			The dashboard after replaying two real incidents from Ethereum mainnet: the Euler Finance exploit and the USDC
+			depeg of March 2023.
+		</p>
 	</div>
 </section>
 
 <style>
 	.hero {
-		padding-block: clamp(56px, 9vw, 112px) clamp(64px, 9vw, 120px);
+		padding-top: clamp(72px, 10vw, 132px);
 		overflow: hidden;
-		isolation: isolate;
 	}
-	.atmosphere {
-		position: absolute;
-		inset: 0;
-		z-index: -1;
-	}
-	.b1 {
-		width: 720px;
-		height: 560px;
-		left: -180px;
-		top: -160px;
-	}
-	.b2 {
-		width: 560px;
-		height: 460px;
-		right: -120px;
-		bottom: -180px;
-	}
-	@media (prefers-reduced-motion: no-preference) {
-		.b1 {
-			animation: drift 22s ease-in-out infinite alternate;
-		}
-		.b2 {
-			animation: drift 28s ease-in-out infinite alternate-reverse;
-		}
-		@keyframes drift {
-			to {
-				transform: translate3d(60px, 40px, 0) scale(1.08);
-			}
-		}
-	}
-	.grid {
+	.copy {
 		display: grid;
-		grid-template-columns: minmax(0, 1.35fr) minmax(0, 0.85fr);
-		gap: clamp(32px, 5vw, 72px);
-		align-items: center;
+		justify-items: center;
+		text-align: center;
+		gap: 26px;
 	}
-	h1 {
-		font-size: clamp(40px, 5.5vw, 76px);
-		letter-spacing: -0.035em;
-		line-height: 1;
-	}
-	.accent {
-		background: linear-gradient(100deg, var(--ink-1) 10%, var(--brand-ink) 55%, var(--live) 110%);
-		-webkit-background-clip: text;
-		background-clip: text;
-		color: transparent;
+	.copy .lead {
+		margin: 0;
+		max-width: 680px;
 	}
 	.ctas {
 		display: flex;
 		flex-wrap: wrap;
+		justify-content: center;
 		gap: 12px;
-		margin-top: 34px;
+		margin-top: 4px;
 	}
-	.ctas :global(.btn--primary) {
+	.assure {
+		margin: 0;
+		font-size: 14.5px;
+		color: var(--muted);
+		max-width: 60ch;
+	}
+	.stage {
+		width: min(1240px, calc(100vw - 32px));
+		margin: clamp(56px, 7vw, 88px) auto 0;
+		padding-bottom: clamp(72px, 9vw, 120px);
+	}
+	.tilt {
+		transform-origin: 50% 0%;
 		will-change: transform;
-		transition:
-			transform 0.35s var(--ease),
-			box-shadow 0.25s var(--ease);
 	}
-	.fine {
-		margin: 22px 0 0;
-		color: var(--ink-3);
-		font-size: 13.5px;
-	}
-	.fine span {
-		color: var(--live);
-		margin-right: 4px;
-	}
-	@media (max-width: 900px) {
-		.grid {
-			grid-template-columns: minmax(0, 1fr);
-		}
+	.caption {
+		margin: 22px auto 0;
+		max-width: 64ch;
+		text-align: center;
+		font-size: 14px;
+		color: var(--muted);
 	}
 </style>
