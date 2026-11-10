@@ -19,8 +19,8 @@
 		},
 		{
 			t: 'Self-host',
-			d: 'Ingest, engine, ML service and dashboard run on one machine. One-command Compose and Helm charts land in milestone 4.',
-			code: 'cargo run -p chainguard-ingestd\nmix phx.server\nuv run chainguard-anomaly serve',
+			d: 'One command brings up ingestion, the engine, the ML and report services and the dashboard. --replay shows real incidents without an RPC.',
+			code: 'scripts/up.sh --replay\ndocker compose -f deploy/compose/\\\n  docker-compose.yml up',
 			href: DOCS.run,
 			cta: 'Run it locally'
 		},

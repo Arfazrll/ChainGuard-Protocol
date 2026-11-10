@@ -30,8 +30,19 @@ jobs:
   # reorg suite or the ML severity ceiling is removed, weakened or bypassed
   # (brief §1, §16).
   invariants:
-    name: invariants (read-only · multi-node · reorg)
+    name: invariants (read-only · multi-node · reorg · audit · tenants)
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: chainguard
+          POSTGRES_PASSWORD: chainguard
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chainguard" --health-interval 3s
+          --health-timeout 3s --health-retries 30
     steps:
       - uses: actions/checkout@v4
       - uses: dtolnay/rust-toolchain@stable
@@ -77,6 +88,17 @@ jobs:
   engine:
     name: engine (Elixir) · incident replay
     runs-on: ubuntu-24.04
+    services:
+      postgres:
+        image: postgres:17-alpine
+        env:
+          POSTGRES_USER: chainguard
+          POSTGRES_PASSWORD: chainguard
+          POSTGRES_DB: postgres
+        ports: ["5432:5432"]
+        options: >-
+          --health-cmd "pg_isready -U chainguard" --health-interval 3s
+          --health-timeout 3s --health-retries 30
     defaults:
       run:
         working-directory: apps/engine
@@ -135,6 +157,58 @@ jobs:
       - run: uv run ruff check src tests scripts
       - run: uv run ruff format --check src tests scripts
       - run: uv run pytest
+
+  report:
+    name: report service (Python)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: services/report
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: services/report/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff check src tests
+      - run: uv run ruff format --check src tests
+      - run: uv run pytest
+
+  # Milestone 4 acceptance: a stranger self-hosts with one command and sees
+  # alerts. Builds every image, starts the stack, and checks the replayed
+  # incidents end to end: alerts, risk score, audit chain, PDF report, UIs.
+  compose:
+    name: self-host in one command (docker compose)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: docker compose up
+        run: docker compose -f deploy/compose/docker-compose.yml up -d --build --wait --wait-timeout 900
+      - name: alerts, risk score, audit chain, report, front ends
+        run: |
+          set -euo pipefail
+          api=http://localhost:4000/api
+          for i in $(seq 1 90); do
+            n=$(curl -sf $api/alerts | jq '.alerts | length' || echo 0)
+            [ "$n" -ge 3 ] && break
+            sleep 2
+          done
+          curl -sf $api/alerts | jq -e '[.alerts[] | select(.rule_id == "flash-loan-drain" and .severity == "critical")] | length == 1'
+          curl -sf $api/alerts | jq -e '[.alerts[] | select(.rule_id == "usdc-peg" and .severity == "high")] | length == 1'
+          curl -sf $api/scores | jq -e '.scores[] | select(.protocol == "euler") | .band == "critical"'
+          curl -sf $api/audit/verify | jq -e '.valid == true and .entries > 0'
+          id=$(curl -sf $api/alerts | jq -r '[.alerts[] | select(.rule_id == "flash-loan-drain")][0].id')
+          curl -sf -o report.pdf http://localhost:8800/reports/alerts/$id.pdf
+          head -c 4 report.pdf | grep -q '%PDF'
+          curl -sf http://localhost:4300/ | grep -qi '<app-root'
+          curl -sf http://localhost:4400/ | grep -q 'ChainGuard'
+      - name: logs on failure
+        if: failure()
+        run: docker compose -f deploy/compose/docker-compose.yml logs --no-color --tail 200
+      - if: always()
+        run: docker compose -f deploy/compose/docker-compose.yml down -v
 
   landing:
     name: landing page (SvelteKit)

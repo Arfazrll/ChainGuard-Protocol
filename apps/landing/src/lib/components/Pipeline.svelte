@@ -12,10 +12,10 @@
 		{ y: 190, title: 'Invariants', sub: 'peg · oracle · outflow' },
 		{ y: 284, title: 'ML anomaly', sub: 'Python service, ≤ medium' }
 	];
-	const outs = [
+	const outs: { y: number; title: string; sub: string; soon?: boolean }[] = [
 		{ y: 96, title: 'Alerts', sub: 'webhook · PagerDuty · Telegram' },
 		{ y: 190, title: 'Live dashboard', sub: 'Phoenix Channels' },
-		{ y: 284, title: 'Risk-score API', sub: 'milestone 4', soon: true }
+		{ y: 284, title: 'Risk scores + audit', sub: 'API, hash chain, PDF reports' }
 	];
 	const c = (x1: number, y1: number, x2: number, y2: number) => {
 		const m = (x1 + x2) / 2;
@@ -44,7 +44,7 @@
 		{
 			n: '04',
 			t: 'Alert with evidence',
-			d: 'Severity, weakness class, tx hash, log index, block hash and the nodes that attested it. Deduplicated and rate-limited, because a monitor that cries wolf is worse than none.'
+			d: 'Severity, weakness class, tx hash, log index, block hash and the nodes that attested it. Deduplicated, rate-limited, and appended to a tamper-evident hash chain.'
 		}
 	];
 </script>
@@ -59,7 +59,7 @@
 				<desc id="pipe-desc">
 					Three or more RPC nodes feed the Rust ingestor, which reaches quorum, handles reorgs and decodes events.
 					Verified records go to Redpanda, then to the Elixir engine's three lanes: rules, invariants and ML. Lanes
-					raise alerts and feed the live dashboard; the risk-score API comes in milestone 4.
+					raise alerts, feed the live dashboard and the risk-score API, and every decision is written to a hash-chained audit log.
 				</desc>
 				{#each raw as d (d)}<path class="wire" {d} />{/each}
 				{#each verified as d (d)}<path class="wire wire--ok" {d} />{/each}
@@ -127,7 +127,6 @@
 			<figcaption>
 				<span><i class="k" aria-hidden="true"></i>raw node data</span>
 				<span><i class="k k--ok" aria-hidden="true"></i>verified by ≥ 2 independent nodes</span>
-				<span><i class="k k--soon" aria-hidden="true"></i>planned</span>
 			</figcaption>
 		</figure>
 
@@ -136,7 +135,7 @@
 			<li><strong>ingestd (Rust)</strong> quorum ≥ 2 · reorg tracker · decode + enrich</li>
 			<li><strong>Redpanda</strong> durable, replayable topics</li>
 			<li><strong>Engine (Elixir)</strong> rules · invariants · ML anomaly</li>
-			<li><strong>Outputs</strong> alerts · live dashboard · risk API (milestone 4)</li>
+			<li><strong>Outputs</strong> alerts · live dashboard · risk scores · audit chain · PDF reports</li>
 		</ol>
 
 		<div class="steps">
@@ -227,10 +226,6 @@
 	}
 	.k--ok {
 		background: var(--live);
-	}
-	.k--soon {
-		background: none;
-		border: 1px dashed var(--ink-3);
 	}
 	.mobile {
 		display: none;

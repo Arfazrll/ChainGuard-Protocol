@@ -20,11 +20,11 @@
 		},
 		{
 			who: 'Funds',
-			what: 'Watch the protocols you are exposed to: outflow invariants, oracle sanity and privileged changes, with alerts that page only on evidence.'
+			what: 'A 0 to 100 health score per protocol with its reasons, plus a private watchlist whose alerts route only to your team.'
 		},
 		{
 			who: 'Insurers',
-			what: 'An incident record with the exact transactions, blocks and attesting nodes, retracted automatically if a reorg erases it.'
+			what: 'A PDF incident report with the exact transactions, blocks and attesting nodes, backed by a hash-chained audit log anyone can re-verify.'
 		}
 	];
 </script>

@@ -87,7 +87,7 @@ if [ "$MODE" = live ]; then
   export CHAINGUARD_SOURCE=jsonl CHAINGUARD_JSONL_PATH="$STREAM" CHAINGUARD_JSONL_MODE=tail
 else
   STREAM="$ROOT/var/replay.jsonl"
-  node scripts/replay-fixtures.mjs "$STREAM"
+  elixir scripts/replay-fixtures.exs "$STREAM"
   export CHAINGUARD_SOURCE=jsonl CHAINGUARD_JSONL_PATH="$STREAM" CHAINGUARD_JSONL_MODE=replay
 fi
 

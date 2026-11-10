@@ -268,7 +268,7 @@ def render(data: ReportData, generated_at: datetime | None = None) -> bytes:
         _grid(
             ["Event", "Transaction / position", "USD", "Parties", "Nodes"],
             ev_rows or [[p("-", CELL)] * 5],
-            [24 * mm, 72 * mm, 22 * mm, 44 * mm, 12 * mm],
+            [24 * mm, 70 * mm, 22 * mm, 43 * mm, 15 * mm],
         ),
     ]
 

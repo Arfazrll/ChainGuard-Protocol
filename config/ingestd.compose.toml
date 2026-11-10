@@ -19,6 +19,27 @@ url_env = "CHAINGUARD_RPC_A"
 id = "node-b"
 url_env = "CHAINGUARD_RPC_B"
 
+# Chainlink price feeds (see ingestd.example.toml for notes).
+[[oracle_feeds]]   # ETH/USD -> WETH
+aggregator = "0x7d4E742018fb52E48b08BE73d041C18B21de6Fb5"
+token = "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2"
+answer_decimals = 8
+
+[[oracle_feeds]]   # USDC/USD -> USDC
+aggregator = "0x54bCC589d9743E521c64233706FC8cB36D275b07"
+token = "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48"
+answer_decimals = 8
+
+[[oracle_feeds]]   # USDT/USD -> USDT
+aggregator = "0x9c41663bB8d6800c8050E2Fbf98E86AD01c973e3"
+token = "0xdAC17F958D2ee523a2206206994597C13D831ec7"
+answer_decimals = 8
+
+[[oracle_feeds]]   # DAI/USD -> DAI
+aggregator = "0x709783ab12b65fD6cd948214EEe6448f3BdD72A3"
+token = "0x6B175474E89094C44Da98b954EedeAC495271d0F"
+answer_decimals = 8
+
 [sink]
 kind = "kafka"
 brokers = ["redpanda:9092"]

@@ -5,7 +5,9 @@
 #      node traffic goes through the allowlisted RPC client.
 #   2. Multi-node verification: quorum guards and their tests exist and pass.
 #   3. Reorg safety: the reorg test-suite exists and passes.
+#   4. Tamper-evident audit trail: append-only at the database, hash chain verified.
 #   5. No false urgency: dedup, rate limits, and the ML lane's severity ceiling.
+#   6. Tenant isolation: watchlists, routes and keys never cross organizations.
 # Covers the Rust ingestion crates, the detection engine (apps/engine) when
 # Elixir is installed, the ML service (services/anomaly) when uv is installed,
 # and the two web front ends.
@@ -35,7 +37,7 @@ hits=$( (grep -rnE "$pattern" crates/*/src --include='*.rs'
          grep -rnE "$pattern" apps/engine/lib --include='*.ex' 2>/dev/null
          grep -rnE "$pattern" apps/dashboard/src --include='*.ts' 2>/dev/null
          grep -rnE "$pattern" apps/landing/src --include='*.ts' --include='*.svelte' 2>/dev/null
-         grep -rnE "$pattern" services/anomaly/src --include='*.py' 2>/dev/null)        | grep -v '^crates/rpc/src/lib.rs:' || true)
+         grep -rnE "$pattern" services/anomaly/src services/report/src --include='*.py' 2>/dev/null)        | grep -v '^crates/rpc/src/lib.rs:' || true)
 if [[ -n "$hits" ]]; then
   violation "signing/sending code in production sources:"$'\n'"$hits"
 else
@@ -63,6 +65,15 @@ if grep -q '@ceiling :medium' apps/engine/lib/chain_guard/anomaly.ex &&
   ok "ML lane severity ceiling (medium) is enforced in the client and the alert manager"
 else
   violation "the ML lane severity ceiling was removed (anomaly.ex @ceiling / manager.ex lane_gate)"
+fi
+
+# --- 4. The audit log is append-only at the database level -------------------
+mig=$(ls apps/engine/priv/repo/migrations/*_create_audit_log.exs 2>/dev/null | head -1)
+if [[ -n "$mig" ]] && grep -q "BEFORE UPDATE OR DELETE ON audit_log" "$mig" \
+   && grep -q "BEFORE TRUNCATE ON audit_log" "$mig"; then
+  ok "audit_log refuses UPDATE, DELETE and TRUNCATE (database trigger)"
+else
+  violation "the audit_log append-only triggers were removed from the migration"
 fi
 
 # --- 2 & 3. Guard tests exist, are not ignored, and pass --------------------
@@ -109,6 +120,16 @@ ENGINE_TESTS=(
   "monitor processes a crashing monitor restarts alone; the others keep running"
   "ML lane never raises above medium, even if a candidate asks for critical"
   "service down: the lane degrades and skips blocks; rules and invariants are unaffected"
+  # invariant 4: tamper-evident audit trail
+  "hash chain invariant 4: entries form a hash chain that verify/0 re-derives"
+  "hash chain invariant 4: the database refuses UPDATE, DELETE and TRUNCATE on the audit log"
+  "hash chain invariant 4: an edit that bypasses the database guard is detected at that entry"
+  "writer invariant 4: every alert event is written with its inputs and sources"
+  # invariant 6: tenant isolation
+  "keys and roles invariant 6: roles gate what a key can do"
+  "isolation invariant 6: one org can never read or change another org's watchlist, routes or keys"
+  "isolation invariant 6: an alert reaches only the orgs that watch its addresses"
+  "isolation invariant 6: org channels require that org's key"
 )
 if command -v mix >/dev/null 2>&1; then
   eout=$(cd apps/engine && mix test --trace 2>&1 || true)
