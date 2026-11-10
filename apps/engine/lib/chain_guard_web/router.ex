@@ -11,6 +11,8 @@ defmodule ChainGuardWeb.Router do
     get "/health", ApiController, :health
     get "/stats", ApiController, :stats
     get "/rules", ApiController, :rules
+    get "/invariants", ApiController, :invariants
+    get "/lanes", ApiController, :lanes
     get "/alerts", ApiController, :alerts
     get "/alerts/:id", ApiController, :alert
   end

@@ -1,0 +1,15 @@
+id: euler-outflow
+version: 1
+kind: outflow
+name: Euler Finance net outflow stays under $5M per 50 blocks
+protocol: euler
+description: >
+  Net USD leaving Euler's labeled contracts over the last 50 blocks (~10 min).
+  A drawdown proxy measured from priced transfers: unpriced tokens do not
+  count. Regression: the March 2023 exploit (block 16,817,996).
+weakness:
+  class: abnormal-tvl-drawdown
+  refs: ["OWASP-SC07:2025 Flash Loan Attacks"]
+within_blocks: 50
+max_net_outflow_usd: 5000000
+severity: critical

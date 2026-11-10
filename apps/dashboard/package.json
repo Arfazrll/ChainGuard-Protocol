@@ -17,6 +17,7 @@
     "@angular/forms": "^22.2.0",
     "@angular/platform-browser": "^22.2.0",
     "@angular/router": "^22.2.0",
+    "cytoscape": "3.34.4",
     "phoenix": "1.8.16",
     "rxjs": "~7.8.0",
     "tslib": "^2.3.0"
@@ -25,6 +26,7 @@
     "@angular/build": "^22.2.6",
     "@angular/cli": "^22.2.6",
     "@angular/compiler-cli": "^22.2.0",
+    "@types/cytoscape": "3.31.0",
     "@types/phoenix": "1.6.8",
     "jsdom": "^30.0.0",
     "prettier": "^3.8.1",

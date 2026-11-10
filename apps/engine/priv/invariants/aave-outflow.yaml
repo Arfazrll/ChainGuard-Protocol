@@ -1,0 +1,14 @@
+id: aave-outflow
+version: 1
+kind: outflow
+name: Aave net outflow stays under $150M per 50 blocks
+protocol: aave
+description: >
+  Net USD leaving Aave's labeled pools over the last 50 blocks. Aave sees
+  $10M+ withdrawals in normal operation, so the limit is set well above
+  that; tune per deployment.
+weakness:
+  class: abnormal-tvl-drawdown
+within_blocks: 50
+max_net_outflow_usd: 150000000
+severity: high

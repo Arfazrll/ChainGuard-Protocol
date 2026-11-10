@@ -49,6 +49,56 @@ export interface Alert {
   updated_ms: number;
   detect_lag_ms: number | null;
   system: boolean;
+  /** Detection lane: rule (YAML), invariant (per protocol), ml (anomaly service), system. */
+  lane: Lane;
+}
+
+export type Lane = 'rule' | 'invariant' | 'ml' | 'system';
+
+export interface NodeLabel {
+  name: string;
+  category: string;
+  protocol: string | null;
+}
+
+/** One aggregated `from -> to` priced-transfer edge of a block. */
+export interface FlowEdge {
+  from: string;
+  to: string;
+  usd: number;
+  transfers: number;
+  tokens: string[];
+  txs: string[];
+  from_label: NodeLabel | null;
+  to_label: NodeLabel | null;
+}
+
+export type InvariantState = 'ok' | 'breached' | 'warming_up';
+
+export interface InvariantStatus {
+  id: string;
+  name: string;
+  kind: 'peg' | 'oracle' | 'outflow';
+  protocol: string;
+  chain_id: number;
+  state: InvariantState;
+  value: number | null;
+  unit: 'usd';
+  limit: number;
+  deviation?: number | null;
+  age_s?: number | null;
+  within_blocks?: number;
+  feed?: string;
+}
+
+export interface MlStatus {
+  state: 'ok' | 'degraded' | 'disabled' | 'starting';
+  severity_ceiling: Severity;
+  blocks_scored: number;
+  alerts_raised: number;
+  consecutive_failures: number;
+  last_error: string | null;
+  model: Record<string, unknown> | null;
 }
 
 export type BlockStatus = 'provisional' | 'final' | 'orphaned';
@@ -69,6 +119,7 @@ export interface BlockSummary {
   replayed?: boolean;
   status: BlockStatus;
   notable?: Evidence[];
+  flows?: FlowEdge[];
 }
 
 export interface Percentiles {
@@ -88,6 +139,11 @@ export interface Stats {
     duplicates: number;
     failed_messages: number;
     alerts: number;
+    txs?: number;
+    usd_observed?: number;
+    ml_blocks?: number;
+    ml_skipped?: number;
+    ml_errors?: number;
   };
   chains: Record<string, { head: number; hash: string; timestamp: number }>;
   latency_ms: {

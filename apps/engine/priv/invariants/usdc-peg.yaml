@@ -1,0 +1,24 @@
+id: usdc-peg
+version: 1
+kind: peg
+name: USDC holds its $1 peg
+protocol: circle
+description: >
+  Chainlink USDC/USD stays within 2% of $1. Fires when the answer enters a
+  wider band than before (2% → high, 5% → critical) and stays quiet while it
+  remains there. Regression: the March 2023 depeg (block 16,802,135).
+weakness:
+  class: stablecoin-depeg
+  refs: ["Circle/SVB exposure, March 2023"]
+feed:
+  name: USDC/USD
+  decimals: 8
+  aggregators:
+    - "0x54bCC589d9743E521c64233706FC8cB36D275b07"   # current (2026)
+    - "0x789190466E21a8b78b8027866CBBDc151542A26C"   # March 2023
+peg_usd: 1.0
+bands:
+  - { deviation: 0.02, severity: high }
+  - { deviation: 0.05, severity: critical }
+dedup: { window_seconds: 21600 }
+rate_limit: { per_minute: 2 }

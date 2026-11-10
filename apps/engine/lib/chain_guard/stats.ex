@@ -44,7 +44,12 @@ defmodule ChainGuard.Stats do
         reorgs: 0,
         duplicates: 0,
         failed_messages: 0,
-        alerts: 0
+        alerts: 0,
+        txs: 0,
+        usd_observed: 0,
+        ml_blocks: 0,
+        ml_skipped: 0,
+        ml_errors: 0
       },
       chains: %{},
       latency: %{ingest: [], detect: [], pipeline: [], rule_eval: []}

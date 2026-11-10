@@ -5,8 +5,10 @@
 #      node traffic goes through the allowlisted RPC client.
 #   2. Multi-node verification: quorum guards and their tests exist and pass.
 #   3. Reorg safety: the reorg test-suite exists and passes.
-# Covers the Rust ingestion crates and, when Elixir is installed, the
-# detection engine (apps/engine).
+#   5. No false urgency: dedup, rate limits, and the ML lane's severity ceiling.
+# Covers the Rust ingestion crates, the detection engine (apps/engine) when
+# Elixir is installed, the ML service (services/anomaly) when uv is installed,
+# and the two web front ends.
 # Usage: scripts/check-invariants.sh   (from anywhere; needs cargo)
 set -euo pipefail
 cd "$(dirname "$0")/.."
@@ -29,7 +31,11 @@ fi
 # --- 1b. No signing or transaction-sending code in production sources -------
 # crates/rpc/src/lib.rs is exempt: it *defines* the deny-list.
 pattern='eth_send|eth_sign|signTransaction|sign_transaction|personal_|wallet_|PrivateKey|private_key|mnemonic|keystore|SigningKey|LocalSigner'
-hits=$( (grep -rnE "$pattern" crates/*/src --include='*.rs';          grep -rnE "$pattern" apps/engine/lib --include='*.ex' 2>/dev/null;          grep -rnE "$pattern" apps/dashboard/src --include='*.ts' 2>/dev/null)        | grep -v '^crates/rpc/src/lib.rs:' || true)
+hits=$( (grep -rnE "$pattern" crates/*/src --include='*.rs'
+         grep -rnE "$pattern" apps/engine/lib --include='*.ex' 2>/dev/null
+         grep -rnE "$pattern" apps/dashboard/src --include='*.ts' 2>/dev/null
+         grep -rnE "$pattern" apps/landing/src --include='*.ts' --include='*.svelte' 2>/dev/null
+         grep -rnE "$pattern" services/anomaly/src --include='*.py' 2>/dev/null)        | grep -v '^crates/rpc/src/lib.rs:' || true)
 if [[ -n "$hits" ]]; then
   violation "signing/sending code in production sources:"$'\n'"$hits"
 else
@@ -49,6 +55,14 @@ if [[ "$direct" == "chainguard-rpc" ]]; then
   ok "only chainguard-rpc depends on an HTTP client"
 else
   violation "crates other than chainguard-rpc depend on reqwest directly: $direct"
+fi
+
+# --- 5. The ML lane can never page on its own -------------------------------
+if grep -q '@ceiling :medium' apps/engine/lib/chain_guard/anomaly.ex &&
+   grep -q 'def lane_gate("ml", severity)' apps/engine/lib/chain_guard/alerts/manager.ex; then
+  ok "ML lane severity ceiling (medium) is enforced in the client and the alert manager"
+else
+  violation "the ML lane severity ceiling was removed (anomaly.ex @ceiling / manager.ex lane_gate)"
 fi
 
 # --- 2 & 3. Guard tests exist, are not ignored, and pass --------------------
@@ -90,6 +104,11 @@ ENGINE_TESTS=(
   "chain flow (invariant 3 end to end) redelivered messages are ignored (idempotent consumer)"
   "historical incident replay through the Broadway pipeline Euler Finance, 2023-03-13 (block 16,817,996): flash-loan drain detected"
   "historical incident replay through the Broadway pipeline baseline: a block of ordinary mainnet traffic raises nothing high or critical"
+  "historical incident replay through the Broadway pipeline USDC depeg, 2023-03-11: quiet at \$0.9821 (block 16,802,107), high at \$0.9765 (16,802,135)"
+  "monitor processes a reorg rolls the monitor back to before the orphaned block"
+  "monitor processes a crashing monitor restarts alone; the others keep running"
+  "ML lane never raises above medium, even if a candidate asks for critical"
+  "service down: the lane degrades and skips blocks; rules and invariants are unaffected"
 )
 if command -v mix >/dev/null 2>&1; then
   eout=$(cd apps/engine && mix test --trace 2>&1 || true)
@@ -106,6 +125,27 @@ elif [[ "${CI:-}" == "true" ]]; then
   violation "Elixir (mix) is not installed in CI; the engine invariants cannot be checked"
 else
   echo "skip: Elixir not installed locally; engine invariants are checked in CI"
+fi
+
+# --- ML service (Python): reorg-aware learning, attacks never become normal ---
+ML_TESTS=(
+  test_reorg_unlearns_the_orphaned_block_and_duplicates_are_ignored
+  test_anomalies_are_not_learned_as_normal
+  test_a_drain_is_flagged_by_both_flow_and_graph_models_with_evidence
+)
+if command -v uv >/dev/null 2>&1; then
+  mout=$(cd services/anomaly && uv run --locked pytest -o addopts= -v -p no:cacheprovider 2>&1 || true)
+  for t in "${ML_TESTS[@]}"; do
+    if grep -qE "::${t} PASSED" <<<"$mout"; then
+      ok "ML test passed: $t"
+    else
+      violation "required ML test is missing or failing: $t"
+    fi
+  done
+elif [[ "${CI:-}" == "true" ]]; then
+  violation "uv is not installed in CI; the ML lane guards cannot be checked"
+else
+  echo "skip: uv not installed locally; ML lane guards are checked in CI"
 fi
 
 if [[ $fail -ne 0 ]]; then

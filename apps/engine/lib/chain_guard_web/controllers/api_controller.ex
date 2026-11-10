@@ -1,7 +1,7 @@
 defmodule ChainGuardWeb.ApiController do
   use ChainGuardWeb, :controller
 
-  alias ChainGuard.{Chain, Rules, Stats}
+  alias ChainGuard.{Anomaly, Chain, Invariants, Rules, Stats}
   alias ChainGuard.Alerts.Manager
 
   def health(conn, _params) do
@@ -11,8 +11,30 @@ defmodule ChainGuardWeb.ApiController do
       chains: Chain.chains(),
       rules_loaded: length(Rules.list()),
       rule_errors: Rules.load_errors(),
+      invariants_loaded: length(Invariants.list()),
+      invariant_errors: Invariants.load_errors(),
+      lanes: lanes(),
       source: source_kind()
     })
+  end
+
+  @doc "The three detection lanes and their state."
+  def lanes(conn, _params), do: json(conn, lanes())
+
+  def invariants(conn, _params) do
+    json(conn, %{
+      invariants: Enum.map(Invariants.list(), &ChainGuard.Invariants.Invariant.describe/1),
+      statuses: Invariants.statuses(),
+      errors: Invariants.load_errors()
+    })
+  end
+
+  defp lanes do
+    %{
+      rules: %{state: :ok, loaded: length(Rules.list())},
+      invariants: %{state: :ok, loaded: length(Invariants.list())},
+      ml: Anomaly.status()
+    }
   end
 
   def stats(conn, _params), do: json(conn, Stats.snapshot())

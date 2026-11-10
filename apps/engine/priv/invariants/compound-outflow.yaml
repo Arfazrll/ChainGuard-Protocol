@@ -1,0 +1,11 @@
+id: compound-outflow
+version: 1
+kind: outflow
+name: Compound V3 net outflow stays under $50M per 50 blocks
+protocol: compound
+description: Net USD leaving Compound V3's labeled markets over the last 50 blocks; tune per deployment.
+weakness:
+  class: abnormal-tvl-drawdown
+within_blocks: 50
+max_net_outflow_usd: 50000000
+severity: high

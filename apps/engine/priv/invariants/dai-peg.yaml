@@ -1,0 +1,16 @@
+id: dai-peg
+version: 1
+kind: peg
+name: DAI holds its $1 peg
+protocol: maker
+description: Chainlink DAI/USD stays within 2% of $1 (2% → high, 5% → critical).
+weakness:
+  class: stablecoin-depeg
+feed:
+  name: DAI/USD
+  decimals: 8
+  aggregators: ["0x709783ab12b65fD6cd948214EEe6448f3BdD72A3"]
+peg_usd: 1.0
+bands:
+  - { deviation: 0.02, severity: high }
+  - { deviation: 0.05, severity: critical }

@@ -1,6 +1,8 @@
 import { ChangeDetectionStrategy, Component, DestroyRef, OnInit, computed, inject, signal } from '@angular/core';
 import { AlertFeed } from './components/alert-feed';
 import { BlockStream } from './components/block-stream';
+import { FundFlowGraph } from './components/fund-flow-graph';
+import { InvariantPanel } from './components/invariant-panel';
 import { RecordsChart } from './components/records-chart';
 import { StatTiles } from './components/stat-tiles';
 import { LiveService } from './core/live.service';
@@ -14,7 +16,7 @@ const CONNECTION = {
 
 @Component({
   selector: 'app-root',
-  imports: [AlertFeed, BlockStream, RecordsChart, StatTiles],
+  imports: [AlertFeed, BlockStream, FundFlowGraph, InvariantPanel, RecordsChart, StatTiles],
   changeDetection: ChangeDetectionStrategy.OnPush,
   templateUrl: './app.html',
   styleUrl: './app.css',

@@ -1,0 +1,16 @@
+id: usdt-peg
+version: 1
+kind: peg
+name: USDT holds its $1 peg
+protocol: tether
+description: Chainlink USDT/USD stays within 2% of $1 (2% → high, 5% → critical).
+weakness:
+  class: stablecoin-depeg
+feed:
+  name: USDT/USD
+  decimals: 8
+  aggregators: ["0x9c41663bB8d6800c8050E2Fbf98E86AD01c973e3"]
+peg_usd: 1.0
+bands:
+  - { deviation: 0.02, severity: high }
+  - { deviation: 0.05, severity: critical }

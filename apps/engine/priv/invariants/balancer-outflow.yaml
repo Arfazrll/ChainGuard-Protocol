@@ -1,0 +1,13 @@
+id: balancer-outflow
+version: 1
+kind: outflow
+name: Balancer V2 Vault net outflow stays under $50M per 50 blocks
+protocol: balancer
+description: >
+  Net USD leaving the Balancer V2 Vault over the last 50 blocks. Flash loans
+  from the Vault net to zero inside their transaction, so they do not count.
+weakness:
+  class: abnormal-tvl-drawdown
+within_blocks: 50
+max_net_outflow_usd: 50000000
+severity: high

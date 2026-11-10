@@ -1,0 +1,20 @@
+id: eth-usd-oracle
+version: 1
+kind: oracle
+name: Chainlink ETH/USD is fresh and sane
+protocol: chainlink
+description: >
+  One ETH/USD update never moves the answer more than 10%, and the feed is
+  never older than 90 minutes at block time (heartbeat 1 h). Lending markets
+  liquidate against this price; a jump or a stale answer is an attack window.
+weakness:
+  class: oracle-manipulation
+  refs: ["OWASP-SC02:2025 Price Oracle Manipulation"]
+feed:
+  name: ETH/USD
+  decimals: 8
+  aggregators: ["0x7d4E742018fb52E48b08BE73d041C18B21de6Fb5"]
+max_jump: 0.10
+jump_severity: high
+max_age_seconds: 5400
+stale_severity: medium

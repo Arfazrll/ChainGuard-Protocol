@@ -11,10 +11,12 @@ defmodule ChainGuard.PipelineTest do
     Chain.reset()
     Manager.reset()
     Stats.reset()
+    ChainGuard.Invariants.reset()
     :ok
   end
 
   defp feed(msgs), do: Enum.each(msgs, &(:ok = Chain.handle(&1)))
+  defp by_rule(id), do: Enum.filter(Manager.recent(), &(&1.rule_id == id))
 
   defp wait_until(fun, timeout \\ 10_000) do
     deadline = System.monotonic_time(:millisecond) + timeout
@@ -38,19 +40,31 @@ defmodule ChainGuard.PipelineTest do
       Phoenix.PubSub.subscribe(ChainGuard.PubSub, "alerts:global")
       b10 = block(10)
       feed(adopt(1, b10, euler_like_drain(b10)))
-      assert [%{rule_id: "flash-loan-drain", status: :provisional} = first] = Manager.recent()
+      # Two lanes agree: the rule (flash-loan drain) and the invariant
+      # (Euler's net outflow over 50 blocks).
+      assert [%{status: :provisional} = first] = by_rule("flash-loan-drain")
+      assert [%{status: :provisional, lane: "invariant"} = inv] = by_rule("euler-outflow")
 
       # Reorg: block 10 is replaced by 10' which carries the same attack tx.
       b10c = block(10, "canonical")
       feed([orphan(7, b10, b10c)])
       assert_receive {:alert, :retracted, %{id: id}}
-      assert id == first.id
+      assert id in [first.id, inv.id]
+      assert Enum.all?(Manager.recent(), &(&1.status == :retracted))
+
+      # The invariant monitor rolled back too, so the canonical block raises
+      # it again instead of being treated as already fired.
       feed(adopt(8, b10c, euler_like_drain(b10c)))
-      assert [%{status: :provisional} = second, %{status: :retracted}] = Manager.recent()
-      assert second.id != first.id
+
+      for rule <- ["flash-loan-drain", "euler-outflow"] do
+        assert [%{status: :provisional} = second, %{status: :retracted}] = by_rule(rule)
+        assert second.id not in [first.id, inv.id]
+      end
 
       feed([finalize(14, b10c)])
-      assert [%{status: :final}, %{status: :retracted}] = Manager.recent()
+
+      for rule <- ["flash-loan-drain", "euler-outflow"],
+          do: assert([%{status: :final}, %{status: :retracted}] = by_rule(rule))
     end
 
     test "redelivered messages are ignored (idempotent consumer)" do
@@ -58,7 +72,8 @@ defmodule ChainGuard.PipelineTest do
       msgs = adopt(1, b, euler_like_drain(b))
       feed(msgs)
       Enum.each(msgs, &assert(Chain.handle(&1) == :duplicate))
-      assert [%{occurrences: 1}] = Manager.recent()
+      assert [_, _] = alerts = Manager.recent()
+      assert Enum.all?(alerts, &(&1.occurrences == 1))
       assert Stats.snapshot().counters.duplicates == length(msgs)
     end
 
@@ -109,8 +124,19 @@ defmodule ChainGuard.PipelineTest do
       assert stats.latency_ms.pipeline.samples == 0
       assert a.detect_lag_ms == nil
 
-      # The other 354 records in the block raise nothing high or critical.
-      assert Enum.filter(alerts, &(&1.severity in [:high, :critical])) == [a]
+      # The invariant lane agrees independently: Euler's net outflow over 50
+      # blocks breaks its $5M limit, on the same transaction.
+      assert [inv] = Enum.filter(alerts, &(&1.rule_id == "euler-outflow"))
+      assert inv.lane == "invariant" and inv.severity == :critical
+      assert inv.tx_hashes == a.tx_hashes
+      assert inv.title =~ "net outflow $8,904,5"
+
+      # The other 354 records in the block raise nothing else high or critical.
+      assert alerts
+             |> Enum.filter(&(&1.severity in [:high, :critical]))
+             |> Enum.map(& &1.id)
+             |> Enum.sort() ==
+               Enum.sort([a.id, inv.id])
     end
 
     test "baseline: a block of ordinary mainnet traffic raises nothing high or critical" do
@@ -148,7 +174,7 @@ defmodule ChainGuard.PipelineTest do
       File.write!(path, tail <> "\n" <> Enum.join(rest, "\n") <> "\n", [:append])
 
       wait_until(fn -> Stats.snapshot().counters.blocks >= 1 end)
-      assert [%{rule_id: "flash-loan-drain"}] = Manager.recent()
+      assert [%{rule_id: "flash-loan-drain"}] = by_rule("flash-loan-drain")
       File.rm_rf!(dir)
     end
   end

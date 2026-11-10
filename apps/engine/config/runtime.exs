@@ -77,6 +77,14 @@ if config_env() != :test do
 
   config :chain_guard, :connectors, connectors
 
+  # ML lane (services/anomaly). Unset: the lane reports itself disabled and
+  # the rule and invariant lanes run alone.
+  if url = System.get_env("CHAINGUARD_ANOMALY_URL") do
+    config :chain_guard, :anomaly,
+      url: String.trim_trailing(url, "/"),
+      timeout_ms: String.to_integer(System.get_env("CHAINGUARD_ANOMALY_TIMEOUT_MS", "3000"))
+  end
+
   if origins = System.get_env("CHAINGUARD_CORS_ORIGINS") do
     config :chain_guard, :cors_origins, String.split(origins, ",")
   end

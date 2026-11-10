@@ -1,22 +1,85 @@
-# Rust
+# ChainGuard: what never goes into git.
+# Each app also keeps its framework's own .gitignore; this file covers the
+# whole repository so nothing slips through if one of those is changed.
+
+# --- Secrets and local configuration -----------------------------------------
+# Real RPC endpoints often embed API keys. Commit *.example.toml only.
+/config/ingestd.toml
+/config/*.local.toml
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+# Claude Code / editor-local settings
+.claude/settings.local.json
+
+# --- Local runtime state --------------------------------------------------------
+# ingestd checkpoints and stream output, engine/ML scratch data.
+/var/
+*.checkpoint.json
+*.checkpoint.tmp
+*.ckpt.json
+*.ckpt.tmp
+# Ad-hoc captures at the repo root. Curated fixtures are kept:
+#   apps/engine/test/fixtures/**/*.jsonl
+#   services/anomaly/tests/fixtures/*.jsonl.gz
+/*.jsonl
+/*.jsonl.gz
+
+# --- Rust -----------------------------------------------------------------------
 /target/
 **/*.rs.bk
 *.proptest-regressions
 
-# Local runtime state (checkpoints, JSONL output)
-/var/
-*.checkpoint.json
-# ingestd JSONL output at the repo root (test fixtures under apps/ are kept)
-/*.jsonl
+# --- Elixir / Erlang (apps/engine) ----------------------------------------------
+_build/
+deps/
+cover/
+erl_crash.dump
+*.ez
+.elixir_ls/
 
-# Local config with real endpoints / keys. Commit *.example.toml only.
-/config/ingestd.toml
-.env
-.env.*
+# --- Node: Angular dashboard, SvelteKit landing ---------------------------------
+node_modules/
+.angular/
+.svelte-kit/
+apps/dashboard/dist/
+apps/landing/build/
+vite.config.*.timestamp-*
+npm-debug.log*
+yarn-error.log*
+.pnpm-debug.log*
 
-# Editors / OS
+# --- Python (services/anomaly) --------------------------------------------------
+.venv/
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+*.egg-info/
+services/anomaly/dist/
+
+# --- Test and coverage output ---------------------------------------------------
+coverage/
+*.lcov
+.coverage
+htmlcov/
+__screenshots__/
+
+# --- Logs and temporary files ---------------------------------------------------
+*.log
+*.tmp
+tmp/
+
+# --- Editors and OS ---------------------------------------------------------------
 .idea/
 .vscode/
+.history/
 *.swp
+*.swo
+*.sublime-workspace
 .DS_Store
 Thumbs.db
+desktop.ini

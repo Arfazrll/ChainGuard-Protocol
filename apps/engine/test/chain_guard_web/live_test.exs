@@ -12,6 +12,7 @@ defmodule ChainGuardWeb.LiveTest do
     Chain.reset()
     Manager.reset()
     Stats.reset()
+    ChainGuard.Invariants.reset()
     :ok
   end
 
@@ -36,8 +37,25 @@ defmodule ChainGuardWeb.LiveTest do
 
     b = block(10)
     Enum.each(adopt(1, b, euler_like_drain(b)), &Chain.handle/1)
-    assert_push "block", %{number: 10, records: 5, txs: 1, alerts: [_], notable: notable}
+
+    assert_push "block", %{
+      number: 10,
+      records: 5,
+      txs: 1,
+      alerts: [_, _],
+      notable: notable,
+      flows: flows
+    }
+
     assert Enum.any?(notable, &(&1.kind == "flash_loan"))
+    # Fund-flow edges for the graph, largest first, with labels.
+    assert [%{usd: top, from_label: %{"name" => "Euler Finance (main proxy)"}} | _] = flows
+    assert top == 38_904_507.0
+    assert_push "invariants", %{statuses: statuses}
+    assert [%{number: 10, edges: [_ | _]}] = ChainGuard.Chain.recent_flows(1)
+    Chain.handle(orphan(7, b))
+    assert ChainGuard.Chain.recent_flows(1) == [], "orphaned flows leave the graph"
+    assert %{state: :breached} = Enum.find(statuses, &(&1.id == "euler-outflow"))
 
     assert {:error, %{reason: "unknown chain"}} =
              socket(ChainGuardWeb.UserSocket)
@@ -55,8 +73,12 @@ defmodule ChainGuardWeb.LiveTest do
     assert %{"rules" => rules} = conn |> get("/api/rules") |> json_response(200)
     assert Enum.all?(rules, &(&1["weakness"]["class"] != nil))
 
-    assert %{"alerts" => [%{"id" => id, "severity" => "critical", "evidence" => [_ | _]}]} =
+    assert %{"alerts" => [_, _] = alerts} =
              conn |> get("/api/alerts?limit=5") |> json_response(200)
+
+    assert Enum.all?(alerts, &(&1["severity"] == "critical" and &1["evidence"] != []))
+    assert %{"id" => id} = Enum.find(alerts, &(&1["lane"] == "rule"))
+    assert Enum.any?(alerts, &(&1["lane"] == "invariant"))
 
     assert %{"id" => ^id} = conn |> get("/api/alerts/#{id}") |> json_response(200)
     assert conn |> get("/api/alerts/nope") |> json_response(404)

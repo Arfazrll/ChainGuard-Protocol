@@ -1,8 +1,8 @@
 import { DestroyRef, Injectable, computed, inject, signal } from '@angular/core';
 import { Channel, Socket } from 'phoenix';
 import { Observable, Subject, catchError, from, map, merge, of, switchMap, timer } from 'rxjs';
-import { Alert, BlockSummary, ConnectionState, ReorgEvent, Stats } from './models';
-import { openBySeverity, pushBlock, setBlockStatus, upsertAlert } from './state';
+import { Alert, BlockSummary, ConnectionState, InvariantStatus, MlStatus, ReorgEvent, Stats } from './models';
+import { FlowBlock, dropFlowBlock, openBySeverity, pushBlock, pushFlowBlock, setBlockStatus, upsertAlert } from './state';
 
 /** Where the engine lives: `?engine=` wins, then a global, then localhost. */
 export function engineUrl(): string {
@@ -37,6 +37,10 @@ export class LiveService {
   readonly stats = signal<Stats | null>(null);
   readonly reorgs = signal<ReorgEvent[]>([]);
   readonly halted = signal<string | null>(null);
+  /** Fund-flow edges of the last blocks (orphaned blocks removed). */
+  readonly flowBlocks = signal<FlowBlock[]>([]);
+  readonly invariants = signal<InvariantStatus[]>([]);
+  readonly ml = signal<MlStatus | null>(null);
   /** Ids of alerts that arrived during this session (for the entrance cue). */
   readonly fresh = signal<ReadonlySet<string>>(new Set());
 
@@ -72,10 +76,15 @@ export class LiveService {
         this.events$.next({ event, alert });
       }),
 
-      on<BlockSummary>(live, 'block').subscribe((b) => this.blocks.update((xs) => pushBlock(xs, b))),
-      on<{ block: { hash: string } }>(live, 'block:orphaned').subscribe(({ block }) =>
-        this.blocks.update((xs) => setBlockStatus(xs, block.hash, 'orphaned')),
-      ),
+      on<BlockSummary>(live, 'block').subscribe(({ flows, ...b }) => {
+        this.blocks.update((xs) => pushBlock(xs, b));
+        this.flowBlocks.update((w) => pushFlowBlock(w, { hash: b.hash, number: b.number, edges: flows ?? [] }));
+      }),
+      on<{ block: { hash: string } }>(live, 'block:orphaned').subscribe(({ block }) => {
+        this.blocks.update((xs) => setBlockStatus(xs, block.hash, 'orphaned'));
+        this.flowBlocks.update((w) => dropFlowBlock(w, block.hash));
+      }),
+      on<{ statuses: InvariantStatus[] }>(live, 'invariants').subscribe(({ statuses }) => this.invariants.set(statuses)),
       on<Omit<ReorgEvent, 'at_ms'>>(live, 'reorg').subscribe((r) =>
         this.reorgs.update((xs) => [{ ...r, at_ms: Date.now() }, ...xs].slice(0, 20)),
       ),
@@ -90,12 +99,27 @@ export class LiveService {
           ),
         )
         .subscribe((s) => s && this.stats.set(s)),
+
+      // ML lane health (the lane can be disabled or degraded without
+      // affecting the other two).
+      timer(0, 10_000)
+        .pipe(
+          switchMap(() =>
+            from(fetch(`${this.engine}/api/lanes`).then((r) => r.json() as Promise<{ ml: MlStatus }>)).pipe(
+              catchError(() => of(null)),
+            ),
+          ),
+        )
+        .subscribe((l) => l && this.ml.set(l.ml)),
     ];
 
     alerts.join().receive('ok', (reply: { alerts: Alert[] }) => this.alerts.set(reply.alerts ?? []));
-    live.join().receive('ok', (reply: { stats: Stats; blocks: BlockSummary[] }) => {
+    live.join().receive('ok', (reply: { stats: Stats; blocks: BlockSummary[]; flows?: FlowBlock[]; invariants?: InvariantStatus[]; ml?: MlStatus }) => {
       this.stats.set(reply.stats);
       this.blocks.set(reply.blocks ?? []);
+      this.flowBlocks.set(reply.flows ?? []);
+      this.invariants.set(reply.invariants ?? []);
+      if (reply.ml) this.ml.set(reply.ml);
     });
 
     this.destroyRef.onDestroy(() => {

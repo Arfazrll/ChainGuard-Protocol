@@ -145,7 +145,8 @@ defmodule ChainGuard.Alerts.Manager do
       updated_ms: now_ms,
       notes: [details],
       status: :final,
-      system: true
+      system: true,
+      lane: "system"
     }
 
     emit(:raised, a)
@@ -222,13 +223,17 @@ defmodule ChainGuard.Alerts.Manager do
     evidence = Enum.map(c.evidence, &Record.evidence/1)
     attest_counts = Enum.map(c.evidence, &length(Map.get(&1, "attested_by", [])))
     min_att = Enum.min(attest_counts, fn -> 0 end)
-    {severity, notes} = gate(rule.severity, min_att)
+    lane = Map.get(c, :lane, "rule")
+    {severity, lane_notes} = lane_gate(lane, rule.severity)
+    {severity, notes} = gate(severity, min_att)
+    notes = lane_notes ++ notes ++ Map.get(c, :notes, [])
     blocks = MapSet.new(c.evidence, &{c.chain_id, Record.block_hash(&1)})
 
     alert = %Alert{
       id: id_for([rule.id, c.dedup_key, hd(c.evidence)["id"]]),
       rule_id: rule.id,
       rule_version: rule.version,
+      lane: lane,
       title: c.title,
       severity: severity,
       requested_severity: rule.severity,
@@ -263,6 +268,17 @@ defmodule ChainGuard.Alerts.Manager do
       {severity, []}
     end
   end
+
+  @doc false
+  # The ML lane is a statistical signal: it never raises above medium, even
+  # if a candidate asks for more (defence in depth behind ChainGuard.Anomaly).
+  def lane_gate("ml", severity) do
+    if Rule.severity_rank(severity) > Rule.severity_rank(:medium),
+      do: {:medium, ["severity capped at medium: the ML lane never raises high or critical"]},
+      else: {severity, []}
+  end
+
+  def lane_gate(_lane, severity), do: {severity, []}
 
   defp merge(a, c, now_ms) do
     evidence =

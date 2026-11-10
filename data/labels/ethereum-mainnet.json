@@ -15,6 +15,7 @@
     { "address": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2", "name": "Aave V3 Pool", "category": "lending", "protocol": "aave" },
     { "address": "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9", "name": "Aave V2 LendingPool", "category": "lending", "protocol": "aave" },
     { "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3", "name": "Compound V3 cUSDCv3", "category": "lending", "protocol": "compound" },
+    { "address": "0xBBBBBbbBBb9cC5e90e3b3Af64bdAF62C37EEFFCb", "name": "Morpho Blue", "category": "lending", "protocol": "morpho" },
     { "address": "0x27182842E098f60e3D576794A5bFFb0777E025d3", "name": "Euler Finance (main proxy)", "category": "lending", "protocol": "euler" },
     { "address": "0x028171bCA77440897B824Ca71D1c56caC55b68A3", "name": "Aave V2 aDAI", "category": "lending", "protocol": "aave" },
     { "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8", "name": "Balancer V2 Vault", "category": "dex", "protocol": "balancer" },
@@ -33,6 +34,13 @@
     { "address": "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", "name": "OpenSea Seaport 1.5", "category": "protocol", "protocol": "opensea" },
 
     { "address": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", "name": "Chainlink ETH/USD feed (proxy)", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x8fFfFfd4AfB6115b954Bd326cbe7B4BA576818f6", "name": "Chainlink USDC/USD feed (proxy)", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x7d4E742018fb52E48b08BE73d041C18B21de6Fb5", "name": "Chainlink ETH/USD aggregator", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x4a3411ac2948B33c69666B35cc6d055B27Ea84f1", "name": "Chainlink BTC/USD aggregator", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x54bCC589d9743E521c64233706FC8cB36D275b07", "name": "Chainlink USDC/USD aggregator", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x789190466E21a8b78b8027866CBBDc151542A26C", "name": "Chainlink USDC/USD aggregator (2023)", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x9c41663bB8d6800c8050E2Fbf98E86AD01c973e3", "name": "Chainlink USDT/USD aggregator", "category": "oracle", "protocol": "chainlink" },
+    { "address": "0x709783ab12b65fD6cd948214EEe6448f3BdD72A3", "name": "Chainlink DAI/USD aggregator", "category": "oracle", "protocol": "chainlink" },
 
     { "address": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a", "name": "Arbitrum One Bridge", "category": "bridge", "protocol": "arbitrum" },
     { "address": "0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef", "name": "Arbitrum L1 Gateway Router", "category": "bridge", "protocol": "arbitrum" },

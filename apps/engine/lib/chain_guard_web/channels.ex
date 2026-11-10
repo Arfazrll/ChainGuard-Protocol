@@ -42,8 +42,8 @@ end
 defmodule ChainGuardWeb.LiveChannel do
   @moduledoc """
   `live:<chain_id>`: replies to join with stats and recent blocks, then
-  pushes `block`, `reorg`, `block:orphaned` and `integrity_halt` as they
-  happen.
+  pushes `block` (with fund-flow edges), `invariants`, `reorg`,
+  `block:orphaned` and `integrity_halt` as they happen.
   """
   use Phoenix.Channel
 
@@ -51,8 +51,14 @@ defmodule ChainGuardWeb.LiveChannel do
   def join("live:" <> chain, _params, socket) do
     case Integer.parse(chain) do
       {id, ""} ->
-        {:ok, %{stats: ChainGuard.Stats.snapshot(), blocks: ChainGuard.Chain.recent_blocks(id)},
-         assign(socket, :chain_id, id)}
+        {:ok,
+         %{
+           stats: ChainGuard.Stats.snapshot(),
+           blocks: ChainGuard.Chain.recent_blocks(id),
+           flows: ChainGuard.Chain.recent_flows(id),
+           invariants: ChainGuard.Invariants.statuses(),
+           ml: ChainGuard.Anomaly.status()
+         }, assign(socket, :chain_id, id)}
 
       _ ->
         {:error, %{reason: "unknown chain"}}

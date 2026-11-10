@@ -9,6 +9,13 @@ const STATUS_META = {
   retracted: { label: 'Retracted', glyph: '↺', hint: 'A reorg orphaned the evidence; this alert no longer stands' },
 } as const;
 
+const LANE_META = {
+  rule: { label: 'Rule', hint: 'A YAML rule matched a known attack shape' },
+  invariant: { label: 'Invariant', hint: 'A per-protocol property that must always hold was broken' },
+  ml: { label: 'ML', hint: 'Statistical anomaly; capped at medium, corroborate before acting' },
+  system: { label: 'System', hint: 'About the monitor itself' },
+} as const;
+
 @Component({
   selector: 'cg-alert-feed',
   changeDetection: ChangeDetectionStrategy.OnPush,
@@ -16,7 +23,7 @@ const STATUS_META = {
     <header class="head">
       <div>
         <h2>Alerts</h2>
-        <p class="sub">Every alert carries its rule, weakness class and the exact on-chain evidence.</p>
+        <p class="sub">Three lanes (rules, invariants, ML). Every alert carries its weakness class and the exact on-chain evidence.</p>
       </div>
     </header>
 
@@ -61,6 +68,7 @@ const STATUS_META = {
             </div>
 
             <div class="meta">
+              <span class="lane" [title]="lanes[a.lane ?? 'rule'].hint">{{ lanes[a.lane ?? 'rule'].label }}</span>
               <span class="mono">{{ a.rule_id }}</span>
               <span>{{ a.weakness.class }}</span>
               @if (a.block_number) { <span class="mono">block #{{ a.block_number }}</span> }
@@ -143,6 +151,7 @@ const STATUS_META = {
     .meta { display: flex; flex-wrap: wrap; gap: 4px 14px; margin-top: 6px; color: var(--ink-3); font-size: 12.5px; }
     .meta .mono { font-size: 12px; }
     .verified { color: var(--live); }
+    .lane { color: var(--ink-2); border: 1px solid var(--hairline-strong); border-radius: 999px; padding: 0 7px; font-size: 11.5px; line-height: 17px; }
     .note { margin: 8px 0 0; padding: 6px 10px; border-left: 2px solid var(--sev-medium); color: var(--ink-2); font-size: 12.5px; background: var(--surface-2); border-radius: 0 6px 6px 0; }
     .expand { margin-top: 10px; background: none; border: 0; padding: 0; color: var(--brand-ink); cursor: pointer; font-size: 12.5px; }
     .evidence-wrap { overflow-x: auto; margin-top: 8px; }
@@ -169,6 +178,7 @@ export class AlertFeed {
   protected readonly severities = SEVERITY_ORDER;
   protected readonly meta = SEVERITY_META;
   protected readonly status = STATUS_META;
+  protected readonly lanes = LANE_META;
   protected readonly active = signal<ReadonlySet<Severity>>(new Set(SEVERITY_ORDER));
   protected readonly showRetracted = signal(true);
   protected readonly open = signal<ReadonlySet<string>>(new Set());

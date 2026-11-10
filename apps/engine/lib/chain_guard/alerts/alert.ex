@@ -12,9 +12,10 @@ defmodule ChainGuard.Alerts.Alert do
   """
 
   @derive {Jason.Encoder,
-           only: ~w(id rule_id rule_version title severity requested_severity weakness chain_id
+           only:
+             ~w(id rule_id rule_version title severity requested_severity weakness chain_id
                     block_number block_hash tx_hashes evidence sources min_attestations status
-                    occurrences notes dedup_key first_seen_ms updated_ms detect_lag_ms system)a}
+                    occurrences notes dedup_key first_seen_ms updated_ms detect_lag_ms system lane)a}
   defstruct [
     :id,
     :rule_id,
@@ -30,6 +31,8 @@ defmodule ChainGuard.Alerts.Alert do
     :first_seen_ms,
     :updated_ms,
     :detect_lag_ms,
+    # Which detection lane raised it: "rule", "invariant", "ml" or "system".
+    lane: "rule",
     tx_hashes: [],
     evidence: [],
     evidence_blocks: MapSet.new(),

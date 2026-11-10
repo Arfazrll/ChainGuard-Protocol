@@ -29,9 +29,12 @@
 
   <cg-stat-tiles [stats]="live.stats()" [head]="live.head()" [open]="live.openBySeverity()" [now]="now()" />
 
+  <cg-fund-flow-graph class="panel" [blocks]="live.flowBlocks()" [alerts]="live.alerts()" />
+
   <div class="grid">
     <cg-alert-feed class="panel" [alerts]="live.alerts()" [fresh]="live.fresh()" [now]="now()" />
     <div class="side">
+      <cg-invariant-panel class="panel" [statuses]="live.invariants()" [ml]="live.ml()" />
       <cg-block-stream [blocks]="live.blocks()" [reorgs]="live.reorgs()" />
       <cg-records-chart class="panel" [blocks]="live.blocks()" />
     </div>

@@ -26,8 +26,9 @@ jobs:
       - run: cargo clippy --workspace --all-targets --locked
       - run: cargo test --workspace --locked --no-fail-fast
 
-  # Merge is blocked if read-only enforcement, multi-node verification or the
-  # reorg suite is removed, weakened or bypassed (brief §1, §16).
+  # Merge is blocked if read-only enforcement, multi-node verification, the
+  # reorg suite or the ML severity ceiling is removed, weakened or bypassed
+  # (brief §1, §16).
   invariants:
     name: invariants (read-only · multi-node · reorg)
     runs-on: ubuntu-24.04
@@ -39,6 +40,9 @@ jobs:
         with:
           otp-version: "29"
           elixir-version: "1.20"
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
       - run: mix deps.get
         working-directory: apps/engine
       - run: scripts/check-invariants.sh
@@ -111,3 +115,41 @@ jobs:
       - run: npm ci
       - run: npx ng build
       - run: npx ng test --watch=false
+
+  # ML lane: models, reorg unlearning, HTTP API, and the replay of real
+  # mainnet blocks before the Euler exploit.
+  anomaly:
+    name: ML service (Python) · real-data replay
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: services/anomaly
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: "3.12"
+          enable-cache: true
+          cache-dependency-glob: services/anomaly/uv.lock
+      - run: uv sync --locked
+      - run: uv run ruff check src tests scripts
+      - run: uv run ruff format --check src tests scripts
+      - run: uv run pytest
+
+  landing:
+    name: landing page (SvelteKit)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/landing
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/landing/package-lock.json
+      - run: npm ci
+      - run: npm run check
+      - run: npm test
+      - run: npm run build

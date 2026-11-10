@@ -11,6 +11,7 @@ defmodule ChainGuard.Application do
         {DNSCluster, query: Application.get_env(:chain_guard, :dns_cluster_query) || :ignore},
         {Phoenix.PubSub, name: ChainGuard.PubSub},
         {Registry, keys: :unique, name: ChainGuard.Rules.Registry},
+        {Registry, keys: :unique, name: ChainGuard.Invariants.Registry},
         {Registry, keys: :unique, name: ChainGuard.Chain.Registry},
         {Task.Supervisor, name: ChainGuard.TaskSupervisor},
         ChainGuard.Stats,
@@ -18,6 +19,10 @@ defmodule ChainGuard.Application do
         ChainGuard.Alerts.Manager,
         # One supervised process per rule: a crashing rule restarts alone.
         ChainGuard.Rules.Supervisor,
+        # One supervised process per invariant (per protocol, per property).
+        ChainGuard.Invariants.Supervisor,
+        # ML lane client: off the hot path, degrades to "unavailable".
+        ChainGuard.Anomaly,
         {DynamicSupervisor, name: ChainGuard.Chain.Supervisor, strategy: :one_for_one},
         ChainGuardWeb.Endpoint
       ] ++ pipeline()

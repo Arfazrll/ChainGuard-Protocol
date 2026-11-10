@@ -1,8 +1,19 @@
 import { describe, expect, it } from 'vitest';
 import { niceMax } from './components/records-chart';
 import { SEVERITY_META, ago, short, usdCompact } from './core/format';
-import { Alert, BlockSummary } from './core/models';
-import { filterAlerts, openBySeverity, pushBlock, setBlockStatus, upsertAlert } from './core/state';
+import { Alert, BlockSummary, FlowEdge } from './core/models';
+import {
+  FLOW_BLOCKS,
+  MAX_GRAPH_EDGES,
+  buildGraph,
+  dropFlowBlock,
+  filterAlerts,
+  openBySeverity,
+  pushBlock,
+  pushFlowBlock,
+  setBlockStatus,
+  upsertAlert,
+} from './core/state';
 
 const alert = (id: string, over: Partial<Alert> = {}): Alert =>
   ({
@@ -99,5 +110,55 @@ describe('chart scale', () => {
     expect(niceMax(310)).toEqual({ top: 400, step: 100 });
     expect(niceMax(1809)).toEqual({ top: 2000, step: 500 });
     expect(niceMax(0)).toEqual({ top: 1, step: 1 });
+  });
+});
+
+describe('fund-flow graph state', () => {
+  const edge = (from: string, to: string, usd: number, over: Partial<FlowEdge> = {}): FlowEdge => ({
+    from,
+    to,
+    usd,
+    transfers: 1,
+    tokens: ['DAI'],
+    txs: [`tx-${from}-${to}`],
+    from_label: null,
+    to_label: null,
+    ...over,
+  });
+
+  it('keeps the last blocks and drops orphaned ones', () => {
+    let w = Array.from({ length: FLOW_BLOCKS + 3 }, (_, i) => i + 1).reduce(
+      (acc, n) => pushFlowBlock(acc, { hash: `0x${n}`, number: n, edges: [edge('a', 'b', n)] }),
+      [] as ReturnType<typeof pushFlowBlock>,
+    );
+    expect(w).toHaveLength(FLOW_BLOCKS);
+    expect(w[0].number).toBe(FLOW_BLOCKS + 3);
+    w = dropFlowBlock(w, `0x${FLOW_BLOCKS + 3}`);
+    expect(w[0].number).toBe(FLOW_BLOCKS + 2);
+  });
+
+  it('aggregates pairs across blocks, labels nodes, and never cuts alerted paths', () => {
+    const big = Array.from({ length: MAX_GRAPH_EDGES + 10 }, (_, i) => edge(`s${i}`, `t${i}`, 1_000_000 + i));
+    const win = [
+      { hash: '0x2', number: 2, edges: [edge('euler', 'att', 5, { txs: ['0xattack'], from_label: { name: 'Euler', category: 'lending', protocol: 'euler' } })] },
+      { hash: '0x1', number: 1, edges: [...big, edge('a', 'b', 10)] },
+    ];
+    const g = buildGraph(win, [alert('x', { tx_hashes: ['0xATTACK'] })]);
+    expect(g.edges.length).toBe(MAX_GRAPH_EDGES + 1);
+    const hot = g.edges.find((e) => e.id === 'euler>att')!;
+    expect(hot.alerted).toBe(true);
+    const euler = g.nodes.find((n) => n.id === 'euler')!;
+    expect(euler).toMatchObject({ name: 'Euler', category: 'lending', labeled: true, alerted: true, outUsd: 5 });
+    expect(g.nodes.find((n) => n.id === `s${MAX_GRAPH_EDGES + 9}`)).toMatchObject({ category: 'unlabeled', labeled: false });
+    expect(g.nodes.find((n) => n.id === 's0')).toBeUndefined(); // the smallest flows are cut...
+    expect(g.nodes.find((n) => n.id === 'att')).toBeDefined(); // ...but never an alerted one
+
+    const small = buildGraph([{ hash: '0x1', number: 1, edges: [edge('a', 'b', 10), edge('a', 'b', 15)] }], []);
+    expect(small.edges).toMatchObject([{ id: 'a>b', usd: 25, transfers: 2 }]);
+  });
+
+  it('a retracted alert no longer marks its path', () => {
+    const win = [{ hash: '0x1', number: 1, edges: [edge('a', 'b', 1, { txs: ['0xt'] })] }];
+    expect(buildGraph(win, [alert('x', { tx_hashes: ['0xt'], status: 'retracted' })]).edges[0].alerted).toBe(false);
   });
 });

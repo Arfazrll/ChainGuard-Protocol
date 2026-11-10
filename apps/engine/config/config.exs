@@ -33,8 +33,14 @@ config :phoenix, :json_library, Jason
 # with none set, the engine runs without a consumer.
 config :chain_guard,
   connectors: [],
-  # The dashboard dev server (apps/dashboard) runs on 4300.
-  cors_origins: ["http://localhost:4300", "http://127.0.0.1:4300"]
+  anomaly: nil,
+  # Dev servers: dashboard (apps/dashboard) on 4300, landing (apps/landing) on 4400.
+  cors_origins: [
+    "http://localhost:4300",
+    "http://127.0.0.1:4300",
+    "http://localhost:4400",
+    "http://127.0.0.1:4400"
+  ]
 
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

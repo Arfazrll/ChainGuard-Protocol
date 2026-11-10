@@ -18,6 +18,14 @@ defmodule ChainGuard.Chain do
     end
   end
 
+  @doc "Fund-flow edges of the most recent blocks (orphaned blocks removed), newest first."
+  def recent_flows(chain_id) do
+    case Registry.lookup(ChainGuard.Chain.Registry, chain_id) do
+      [{pid, _}] -> GenServer.call(pid, :recent_flows)
+      [] -> []
+    end
+  end
+
   def chains,
     do:
       Registry.select(ChainGuard.Chain.Registry, [{{:"$1", :_, :_}, [], [:"$1"]}]) |> Enum.sort()
@@ -66,11 +74,12 @@ defmodule ChainGuard.Chain.Server do
   use GenServer, restart: :transient
   require Logger
 
-  alias ChainGuard.{Record, Rules, Stats}
+  alias ChainGuard.{Anomaly, Flows, Invariants, Record, Rules, Stats}
   alias ChainGuard.Alerts.Manager
   alias ChainGuard.Rules.Evaluator
 
   @recent 30
+  @recent_flows 12
   @notable_usd 100_000
 
   def start_link(chain_id),
@@ -80,10 +89,12 @@ defmodule ChainGuard.Chain.Server do
       )
 
   @impl true
-  def init(chain_id), do: {:ok, %{chain_id: chain_id, last_seq: 0, pending: nil, recent: []}}
+  def init(chain_id),
+    do: {:ok, %{chain_id: chain_id, last_seq: 0, pending: nil, recent: [], flows: []}}
 
   @impl true
   def handle_call(:recent_blocks, _from, s), do: {:reply, s.recent, s}
+  def handle_call(:recent_flows, _from, s), do: {:reply, s.flows, s}
 
   def handle_call({:message, %{"seq" => seq}}, _from, %{last_seq: last} = s) when seq <= last do
     Stats.incr(:duplicates)
@@ -138,6 +149,8 @@ defmodule ChainGuard.Chain.Server do
   defp handle("block_orphaned", %{"block" => b} = m, s) do
     s = flush(s)
     Rules.orphan_block(s.chain_id, b["hash"])
+    Invariants.orphan_block(s.chain_id, b["hash"])
+    Anomaly.orphan(s.chain_id, b["hash"])
 
     replaced = m["replaced_by"] && m["replaced_by"]["hash"]
 
@@ -158,7 +171,8 @@ defmodule ChainGuard.Chain.Server do
       | recent:
           Enum.map(s.recent, fn x ->
             if x.hash == b["hash"], do: %{x | status: "orphaned"}, else: x
-          end)
+          end),
+        flows: Enum.reject(s.flows, &(&1.hash == b["hash"]))
     }
   end
 
@@ -217,8 +231,11 @@ defmodule ChainGuard.Chain.Server do
   defp flush(%{pending: p} = s) do
     started = System.monotonic_time(:millisecond)
     ctx = Evaluator.context(s.chain_id, p.block, Enum.reverse(p.records))
-    alerts = ctx |> Rules.evaluate_block() |> Manager.submit()
+    # Lanes 1 and 3 run inline (pure, bounded); lane 2 (ML) is asynchronous
+    # and reports back through the alert manager on its own.
+    alerts = (Rules.evaluate_block(ctx) ++ Invariants.evaluate_block(ctx)) |> Manager.submit()
     eval_ms = System.monotonic_time(:millisecond) - started
+    Anomaly.observe(ctx)
 
     now = System.system_time(:millisecond)
     ingest_lag = ingest_lag(ctx.records, p.block)
@@ -234,6 +251,8 @@ defmodule ChainGuard.Chain.Server do
         else: %{ingest: ingest_lag, detect: detect_lag, pipeline: pipeline, rule_eval: eval_ms}
 
     Stats.block(s.chain_id, p.block, length(ctx.records), length(alerts), latencies)
+    Stats.incr(:txs, map_size(ctx.txs))
+    Stats.incr(:usd_observed, round(Flows.priced_volume(ctx.records)))
     if replayed, do: Stats.incr(:replayed_blocks)
 
     summary = %{
@@ -250,11 +269,23 @@ defmodule ChainGuard.Chain.Server do
       eval_ms: eval_ms,
       replayed: replayed,
       status: "provisional",
-      notable: notable(ctx.records)
+      notable: notable(ctx.records),
+      flows: Flows.edges(ctx.records)
     }
 
     broadcast(s.chain_id, "block", summary)
-    %{s | pending: nil, recent: Enum.take([Map.delete(summary, :notable) | s.recent], @recent)}
+    broadcast(s.chain_id, "invariants", %{statuses: Invariants.statuses()})
+
+    %{
+      s
+      | pending: nil,
+        recent: Enum.take([Map.drop(summary, [:notable, :flows]) | s.recent], @recent),
+        flows:
+          Enum.take(
+            [%{hash: summary.hash, number: summary.number, edges: summary.flows} | s.flows],
+            @recent_flows
+          )
+    }
   end
 
   # Signed on purpose: a negative lag means a clock is behind block time.
