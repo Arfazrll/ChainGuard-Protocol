@@ -1,0 +1,20 @@
+id: emergency-pause
+version: 1
+name: Known protocol paused
+severity: high
+weakness:
+  class: incident-response-signal
+  refs: ["Pausable emergency stop"]
+description: >
+  A labeled protocol or token contract emitted `Paused`. Teams pause during
+  an active incident, so this is often the earliest public signal that
+  something is wrong.
+scope: record
+match:
+  kind: paused
+  label.contract: { exists: true }
+title: "{{label.contract.name}} was paused by {{event.account|short}}"
+dedup:
+  key: "{{contract}}"
+  window_seconds: 3600
+rate_limit: { per_minute: 10 }

@@ -1,0 +1,20 @@
+id: privileged-change
+version: 1
+name: Privileged role or implementation change on a known protocol
+severity: high
+weakness:
+  class: access-control
+  refs: ["OWASP-SC01:2025 Access Control Vulnerabilities", "SWC-112 Delegatecall to Untrusted Callee"]
+description: >
+  A labeled protocol contract upgraded its proxy implementation, changed its
+  proxy admin, transferred ownership, or granted a role. Usually governance,
+  but also the first on-chain step of a key compromise or a malicious upgrade.
+scope: record
+match:
+  kind: [proxy_upgraded, proxy_admin_changed, ownership_transferred, role_granted]
+  label.contract: { exists: true }
+title: "{{kind}} on {{label.contract.name}} in tx {{tx_hash|short}}"
+dedup:
+  key: "{{contract}}:{{kind}}:{{tx_hash}}"
+  window_seconds: 3600
+rate_limit: { per_minute: 10 }

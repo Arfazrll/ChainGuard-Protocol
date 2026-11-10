@@ -1,0 +1,58 @@
+{
+  "chain_id": 1,
+  "notes": "Public seed labels. Addresses must be EIP-55 checksummed; loading rejects bad checksums. Customer-confidential labels never go here - they are tenant-scoped (invariant 6). Contributions: one entry per address, cite a source in the PR.",
+  "entries": [
+    { "address": "0xA0b86991c6218b36c1d19D4a2e9Eb0cE3606eB48", "name": "USD Coin", "category": "stablecoin", "protocol": "circle", "token": { "symbol": "USDC", "decimals": 6 }, "usd_peg": 1.0 },
+    { "address": "0xdAC17F958D2ee523a2206206994597C13D831ec7", "name": "Tether USD", "category": "stablecoin", "protocol": "tether", "token": { "symbol": "USDT", "decimals": 6 }, "usd_peg": 1.0 },
+    { "address": "0x6B175474E89094C44Da98b954EedeAC495271d0F", "name": "Dai Stablecoin", "category": "stablecoin", "protocol": "maker", "token": { "symbol": "DAI", "decimals": 18 }, "usd_peg": 1.0 },
+    { "address": "0xC02aaA39b223FE8D0A0e5C4F27eAD9083C756Cc2", "name": "Wrapped Ether", "category": "token", "token": { "symbol": "WETH", "decimals": 18 } },
+    { "address": "0x2260FAC5E5542a773Aa44fBCfeDf7C193bc2C599", "name": "Wrapped BTC", "category": "token", "token": { "symbol": "WBTC", "decimals": 8 } },
+    { "address": "0xae7ab96520DE3A18E5e111B5EaAb095312D7fE84", "name": "Lido stETH", "category": "token", "protocol": "lido", "token": { "symbol": "stETH", "decimals": 18 } },
+    { "address": "0x514910771AF9Ca656af840dff83E8264EcF986CA", "name": "Chainlink Token", "category": "token", "protocol": "chainlink", "token": { "symbol": "LINK", "decimals": 18 } },
+    { "address": "0x1f9840a85d5aF5bf1D1762F925BDADdC4201F984", "name": "Uniswap Token", "category": "token", "protocol": "uniswap", "token": { "symbol": "UNI", "decimals": 18 } },
+    { "address": "0x7Fc66500c84A76Ad7e9c93437bFc5Ac33E2DDaE9", "name": "Aave Token", "category": "token", "protocol": "aave", "token": { "symbol": "AAVE", "decimals": 18 } },
+
+    { "address": "0x87870Bca3F3fD6335C3F4ce8392D69350B4fA4E2", "name": "Aave V3 Pool", "category": "lending", "protocol": "aave" },
+    { "address": "0x7d2768dE32b0b80b7a3454c06BdAc94A69DDc7A9", "name": "Aave V2 LendingPool", "category": "lending", "protocol": "aave" },
+    { "address": "0xc3d688B66703497DAA19211EEdff47f25384cdc3", "name": "Compound V3 cUSDCv3", "category": "lending", "protocol": "compound" },
+    { "address": "0x27182842E098f60e3D576794A5bFFb0777E025d3", "name": "Euler Finance (main proxy)", "category": "lending", "protocol": "euler" },
+    { "address": "0x028171bCA77440897B824Ca71D1c56caC55b68A3", "name": "Aave V2 aDAI", "category": "lending", "protocol": "aave" },
+    { "address": "0xBA12222222228d8Ba445958a75a0704d566BF2C8", "name": "Balancer V2 Vault", "category": "dex", "protocol": "balancer" },
+    { "address": "0x7a250d5630B4cF539739dF2C5dAcb4c659F2488D", "name": "Uniswap V2 Router 02", "category": "dex", "protocol": "uniswap" },
+    { "address": "0x5C69bEe701ef814a2B6a3EDD4B1652CB9cc5aA6f", "name": "Uniswap V2 Factory", "category": "dex", "protocol": "uniswap" },
+    { "address": "0xE592427A0AEce92De3Edee1F18E0157C05861564", "name": "Uniswap V3 SwapRouter", "category": "dex", "protocol": "uniswap" },
+    { "address": "0x68b3465833fb72A70ecDF485E0e4C7bD8665Fc45", "name": "Uniswap V3 SwapRouter02", "category": "dex", "protocol": "uniswap" },
+    { "address": "0x1F98431c8aD98523631AE4a59f267346ea31F984", "name": "Uniswap V3 Factory", "category": "dex", "protocol": "uniswap" },
+    { "address": "0x3fC91A3afd70395Cd496C647d5a6CC9D4B2b7FAD", "name": "Uniswap Universal Router", "category": "dex", "protocol": "uniswap" },
+    { "address": "0x1111111254EEB25477B68fb85Ed929f73A960582", "name": "1inch Aggregation Router V5", "category": "dex", "protocol": "1inch" },
+    { "address": "0xbEbc44782C7dB0a1A60Cb6fe97d0b483032FF1C7", "name": "Curve 3pool", "category": "dex", "protocol": "curve" },
+    { "address": "0x000000000022D473030F116dDEE9F6B43aC78BA3", "name": "Uniswap Permit2", "category": "protocol", "protocol": "uniswap" },
+    { "address": "0xDef1C0ded9bec7F1a1670819833240f027b25EfF", "name": "0x Exchange Proxy", "category": "dex", "protocol": "0x" },
+    { "address": "0x111111125421cA6dc452d289314280a0f8842A65", "name": "1inch Aggregation Router V6", "category": "dex", "protocol": "1inch" },
+    { "address": "0xC92E8bdf79f0507f65a392b0ab4667716BFE0110", "name": "CoW Protocol Vault Relayer", "category": "dex", "protocol": "cow" },
+    { "address": "0x00000000000000ADc04C56Bf30aC9d3c0aAF14dC", "name": "OpenSea Seaport 1.5", "category": "protocol", "protocol": "opensea" },
+
+    { "address": "0x5f4eC3Df9cbd43714FE2740f5E3616155c5b8419", "name": "Chainlink ETH/USD feed (proxy)", "category": "oracle", "protocol": "chainlink" },
+
+    { "address": "0x8315177aB297bA92A06054cE80a67Ed4DBd7ed3a", "name": "Arbitrum One Bridge", "category": "bridge", "protocol": "arbitrum" },
+    { "address": "0x72Ce9c846789fdB6fC1f34aC4AD25Dd9ef7031ef", "name": "Arbitrum L1 Gateway Router", "category": "bridge", "protocol": "arbitrum" },
+    { "address": "0x99C9fc46f92E8a1c0deC1b1747d010903E884bE1", "name": "Optimism L1 Standard Bridge", "category": "bridge", "protocol": "optimism" },
+    { "address": "0x3154Cf16ccdb4C6d922629664174b904d80F2C35", "name": "Base L1 Standard Bridge", "category": "bridge", "protocol": "base" },
+    { "address": "0x40ec5B33f54e0E8A33A975908C5BA1c14e5BbbDf", "name": "Polygon PoS ERC20 Predicate", "category": "bridge", "protocol": "polygon" },
+    { "address": "0x3ee18B2214AFF97000D974cf647E7C347E8fa585", "name": "Wormhole Token Bridge", "category": "bridge", "protocol": "wormhole" },
+    { "address": "0x32400084C286CF3E17e7B677ea9583e60a000324", "name": "zkSync Era Diamond Proxy", "category": "bridge", "protocol": "zksync" },
+
+    { "address": "0x12D66f87A04A9E220743712cE6d9bB1B5616B8Fc", "name": "Tornado Cash 0.1 ETH", "category": "mixer", "protocol": "tornado_cash" },
+    { "address": "0x47CE0C6eD5B0Ce3d3A51fdb1C52DC66a7c3c2936", "name": "Tornado Cash 1 ETH", "category": "mixer", "protocol": "tornado_cash" },
+    { "address": "0x910Cbd523D972eb0a6f4cAe4618aD62622b39DbF", "name": "Tornado Cash 10 ETH", "category": "mixer", "protocol": "tornado_cash" },
+    { "address": "0xA160cdAB225685dA1d56aa342Ad8841c3b53f291", "name": "Tornado Cash 100 ETH", "category": "mixer", "protocol": "tornado_cash" },
+    { "address": "0xd90e2f925DA726b50C4Ed8D0Fb90Ad053324F31b", "name": "Tornado Cash Router", "category": "mixer", "protocol": "tornado_cash" },
+
+    { "address": "0x28C6c06298d514Db089934071355E5743bf21d60", "name": "Binance 14", "category": "exchange", "protocol": "binance" },
+    { "address": "0x21a31Ee1afC51d94C2eFcCAa2092aD1028285549", "name": "Binance 15", "category": "exchange", "protocol": "binance" },
+    { "address": "0xDFd5293D8e347dFe59E90eFd55b2956a1343963d", "name": "Binance 16", "category": "exchange", "protocol": "binance" },
+    { "address": "0x71660c4005BA85c37ccec55d0C4493E66Fe775d3", "name": "Coinbase 1", "category": "exchange", "protocol": "coinbase" },
+    { "address": "0xA9D1e08C7793af67e9d92fe308d5697FB81d3E43", "name": "Coinbase 10", "category": "exchange", "protocol": "coinbase" },
+    { "address": "0x2910543Af39abA0Cd09dBb2D50200b3E800A63D2", "name": "Kraken", "category": "exchange", "protocol": "kraken" }
+  ]
+}

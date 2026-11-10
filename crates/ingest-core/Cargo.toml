@@ -1,0 +1,28 @@
+[package]
+name = "chainguard-ingest-core"
+description = "Reorg-safe, multi-node-verified ingestion core for ChainGuard (no network I/O)"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[features]
+# Exposes the in-memory fork-tree chain, mock nodes and the ledger used by
+# the reorg test-suite, so other crates can reuse them in their own tests.
+testkit = []
+
+[dependencies]
+alloy-primitives.workspace = true
+alloy-sol-types.workspace = true
+futures.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+thiserror.workspace = true
+tokio.workspace = true
+tracing.workspace = true
+
+[dev-dependencies]
+# Self-dependency so integration tests in tests/ can use the testkit.
+chainguard-ingest-core = { path = ".", features = ["testkit"] }
+proptest.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread"] }

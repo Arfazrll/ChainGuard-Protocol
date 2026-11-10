@@ -1,0 +1,28 @@
+id: approval-farming
+version: 1
+name: Many wallets grant unlimited approvals to a new, unknown spender
+severity: medium
+weakness:
+  class: approval-phishing
+  refs: ["user-level: wallet-drainer approval phishing"]
+description: >
+  At least 8 distinct owners grant an unlimited (>= 2^255) token approval to
+  the same unlabeled spender within 50 blocks, and that spender was first seen
+  after the engine's warm-up. Wallet-drainer campaigns look like this, and so
+  do brand-new legitimate routers, so it stays at medium.
+scope: window
+match:
+  kind: approval
+  event.amount: { gte: "2^255" }
+  label.spender: { exists: false }
+group_by: event.spender
+distinct: event.owner
+threshold: 8
+within_blocks: 50
+novel_group: true
+warmup_blocks: 300
+title: "{{count}} wallets approved unknown spender {{group|short}} without limit within {{within_blocks}} blocks"
+dedup:
+  key: "{{group}}"
+  window_seconds: 21600
+rate_limit: { per_minute: 5 }

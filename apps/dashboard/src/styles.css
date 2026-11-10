@@ -1,0 +1,185 @@
+/*
+ * ChainGuard design tokens. Dark-first; light is secondary.
+ * Color roles carry meaning and are never scattered as raw hex in components:
+ *   --brand   violet: brand, focus, the single chart series
+ *   --live    emerald: live / healthy / verified only
+ *   --sev-*   red/amber/orange: alerts and risk only (always with label + glyph)
+ * Chart color validated with the dataviz validator on --surface-1 (#131317).
+ */
+:root {
+  color-scheme: dark;
+  --bg: #0b0b0e;
+  --surface-1: #131317;
+  --surface-2: #1a1a20;
+  --surface-3: #23232b;
+  --glass: rgba(24, 24, 31, 0.62);
+  --hairline: rgba(255, 255, 255, 0.07);
+  --hairline-strong: rgba(255, 255, 255, 0.13);
+
+  --ink-1: #f0efec;
+  --ink-2: #c3c2b7;
+  --ink-3: #898781;
+
+  --brand: #8f7cf7;
+  --brand-ink: #b9adff;
+  --brand-wash: rgba(143, 124, 247, 0.13);
+  --live: #34d399;
+  --live-wash: rgba(52, 211, 153, 0.12);
+
+  --sev-critical: #d03b3b;
+  --sev-high: #ec835a;
+  --sev-medium: #fab219;
+  --sev-low: #898781;
+  --sev-info: #6b6a66;
+
+  --grid: #24242b;
+  --axis: #383835;
+
+  --font-display: 'Bricolage Grotesque', 'Inter Tight', system-ui, sans-serif;
+  --font-ui: 'Inter Tight', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, 'Cascadia Mono', Consolas, monospace;
+
+  --radius: 12px;
+  --radius-sm: 8px;
+  --ease: cubic-bezier(0.2, 0.7, 0.2, 1);
+}
+
+@media (prefers-color-scheme: light) {
+  :root:where(:not([data-theme='dark'])) {
+    color-scheme: light;
+    --bg: #f4f4f1;
+    --surface-1: #fcfcfb;
+    --surface-2: #f3f2ee;
+    --surface-3: #e9e8e2;
+    --glass: rgba(252, 252, 251, 0.78);
+    --hairline: rgba(11, 11, 11, 0.08);
+    --hairline-strong: rgba(11, 11, 11, 0.15);
+    --ink-1: #0b0b0b;
+    --ink-2: #52514e;
+    --ink-3: #75736d;
+    --brand: #6250d6;
+    --brand-ink: #4a3aa7;
+    --brand-wash: rgba(98, 80, 214, 0.1);
+    --live: #0b8a5a;
+    --live-wash: rgba(11, 138, 90, 0.1);
+    --grid: #e6e5df;
+    --axis: #c3c2b7;
+  }
+}
+
+:root[data-theme='light'] {
+  color-scheme: light;
+  --bg: #f4f4f1;
+  --surface-1: #fcfcfb;
+  --surface-2: #f3f2ee;
+  --surface-3: #e9e8e2;
+  --glass: rgba(252, 252, 251, 0.78);
+  --hairline: rgba(11, 11, 11, 0.08);
+  --hairline-strong: rgba(11, 11, 11, 0.15);
+  --ink-1: #0b0b0b;
+  --ink-2: #52514e;
+  --ink-3: #75736d;
+  --brand: #6250d6;
+  --brand-ink: #4a3aa7;
+  --brand-wash: rgba(98, 80, 214, 0.1);
+  --live: #0b8a5a;
+  --live-wash: rgba(11, 138, 90, 0.1);
+  --grid: #e6e5df;
+  --axis: #c3c2b7;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body {
+  margin: 0;
+  min-height: 100%;
+}
+
+body {
+  background: var(--bg);
+  color: var(--ink-1);
+  font: 14px/1.45 var(--font-ui);
+  -webkit-font-smoothing: antialiased;
+  /* Atmosphere: two faint light blooms, never competing with content. */
+  background-image:
+    radial-gradient(60rem 30rem at -10% -20%, var(--brand-wash), transparent 70%),
+    radial-gradient(40rem 24rem at 110% -10%, var(--live-wash), transparent 70%);
+  background-attachment: fixed;
+}
+
+a {
+  color: var(--brand-ink);
+  text-decoration: none;
+}
+a:hover {
+  text-decoration: underline;
+}
+
+button {
+  font: inherit;
+  color: inherit;
+}
+
+:focus-visible {
+  outline: 2px solid var(--brand);
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+.mono {
+  font-family: var(--font-mono);
+  font-size: 12.5px;
+  letter-spacing: -0.01em;
+}
+
+.visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+/* Severity chip: glyph + label + color, so color is never alone. */
+.sev {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 2px 8px 2px 6px;
+  border-radius: 999px;
+  font-size: 11.5px;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+  color: var(--ink-1);
+  background: var(--surface-3);
+  border: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+.sev i {
+  font-style: normal;
+  font-size: 10px;
+}
+.sev--critical i { color: var(--sev-critical); }
+.sev--high i { color: var(--sev-high); }
+.sev--medium i { color: var(--sev-medium); }
+.sev--low i { color: var(--sev-low); }
+.sev--info i { color: var(--sev-info); }
+.sev--critical { border-color: color-mix(in srgb, var(--sev-critical) 55%, transparent); }
+.sev--high { border-color: color-mix(in srgb, var(--sev-high) 45%, transparent); }
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+  }
+}

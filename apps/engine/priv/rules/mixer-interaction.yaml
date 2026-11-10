@@ -1,0 +1,23 @@
+id: mixer-interaction
+version: 1
+name: Funds moved into or out of a mixer
+severity: low
+weakness:
+  class: laundering-flow
+  refs: ["FATF red flag: use of mixers / tumblers"]
+description: >
+  A transaction touches a labeled mixer: an event emitted by a mixer contract
+  (deposit or withdrawal) or a token transfer to or from one. Low on its own;
+  watchlists and fund-flow tracing (milestone 3) raise it when it follows an
+  exploit.
+scope: record
+match:
+  any:
+    - label.contract.category: mixer
+    - label.to.category: mixer
+    - label.from.category: mixer
+title: "Mixer interaction in tx {{tx_hash|short}} (block {{block_number}})"
+dedup:
+  key: "{{tx_hash}}"
+  window_seconds: 3600
+rate_limit: { per_minute: 20 }

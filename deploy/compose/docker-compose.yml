@@ -1,0 +1,66 @@
+# Single-node demo stack: ingestd → Redpanda → ClickHouse.
+#
+#   export CHAINGUARD_RPC_A=https://ethereum-rpc.publicnode.com
+#   export CHAINGUARD_RPC_B=https://eth.drpc.org
+#   docker compose -f deploy/compose/docker-compose.yml up --build
+#
+# Then: docker compose exec clickhouse clickhouse-client \
+#   -q "SELECT kind, count() FROM chainguard.records_live GROUP BY kind"
+#
+# STATUS: not yet run end to end (written on a machine without Docker).
+
+name: chainguard
+
+services:
+  redpanda:
+    image: docker.redpanda.com/redpandadata/redpanda:v24.2.7
+    command:
+      - redpanda
+      - start
+      - --mode=dev-container
+      - --smp=1
+      - --kafka-addr=internal://0.0.0.0:9092,external://0.0.0.0:19092
+      - --advertise-kafka-addr=internal://redpanda:9092,external://localhost:19092
+    ports:
+      - "19092:19092"
+    healthcheck:
+      test: ["CMD", "rpk", "cluster", "health", "--exit-when-healthy"]
+      interval: 5s
+      timeout: 10s
+      retries: 20
+
+  clickhouse:
+    image: clickhouse/clickhouse-server:24.8
+    environment:
+      CLICKHOUSE_DEFAULT_ACCESS_MANAGEMENT: "1"
+    ports:
+      - "8123:8123"
+    volumes:
+      - ../clickhouse:/docker-entrypoint-initdb.d:ro
+      - clickhouse-data:/var/lib/clickhouse
+    depends_on:
+      redpanda:
+        condition: service_healthy
+
+  ingestd:
+    build:
+      context: ../..
+      dockerfile: deploy/docker/ingestd.Dockerfile
+    environment:
+      CHAINGUARD_RPC_A: ${CHAINGUARD_RPC_A:?set CHAINGUARD_RPC_A to an Ethereum RPC URL}
+      CHAINGUARD_RPC_B: ${CHAINGUARD_RPC_B:?set CHAINGUARD_RPC_B to a second, independent RPC URL}
+      CHAINGUARD_LOG_FORMAT: json
+    command: ["--config", "/app/config/ingestd.compose.toml"]
+    volumes:
+      - ingestd-state:/var/lib/chainguard
+    depends_on:
+      redpanda:
+        condition: service_healthy
+    # Exit code 2 = integrity halt. It persists in the checkpoint, so restarts
+    # exit again immediately until an operator runs --clear-halt; the cap
+    # stops a restart loop.
+    restart: on-failure:5
+
+volumes:
+  clickhouse-data:
+  ingestd-state:

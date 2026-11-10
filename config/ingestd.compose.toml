@@ -1,0 +1,25 @@
+# Used by deploy/compose/docker-compose.yml: publishes to Redpanda, which
+# ClickHouse consumes via a Kafka-engine table (deploy/clickhouse/).
+chain_id = 1
+chain_name = "ethereum-mainnet"
+confirmations = 64
+
+# Top-level keys must come before any [table] in TOML.
+labels = "/app/data/labels/ethereum-mainnet.json"
+checkpoint = "/var/lib/chainguard/ingestd.checkpoint.json"
+
+[quorum]
+min_agreement = 2
+
+[[nodes]]
+id = "node-a"
+url_env = "CHAINGUARD_RPC_A"
+
+[[nodes]]
+id = "node-b"
+url_env = "CHAINGUARD_RPC_B"
+
+[sink]
+kind = "kafka"
+brokers = ["redpanda:9092"]
+topic = "chainguard.ingest.v1.ethereum-mainnet"

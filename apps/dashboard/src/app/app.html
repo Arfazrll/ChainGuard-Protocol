@@ -1,0 +1,48 @@
+<header class="top">
+  <a class="brand" href="/" aria-label="ChainGuard home">
+    <svg class="mark" viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M12 2.5 20 6v6.2c0 4.6-3.3 8.1-8 9.3-4.7-1.2-8-4.7-8-9.3V6z" />
+      <path class="mark-cut" d="M8.2 12.4l2.6 2.6 5-5.2" />
+    </svg>
+    <span>ChainGuard</span>
+  </a>
+  <span class="chain">Ethereum mainnet</span>
+  <span class="spacer"></span>
+  <span class="badge" title="ChainGuard holds no keys and cannot send transactions">Read-only</span>
+  <span class="conn conn--{{ conn().tone }}" role="status">
+    <span class="dot" aria-hidden="true"></span>{{ conn().label }}
+  </span>
+</header>
+
+<main>
+  @if (live.halted(); as reason) {
+    <p class="halt" role="alert">
+      <strong>Ingestion halted.</strong> {{ reason }}. Alerts stopped advancing; an operator must investigate.
+    </p>
+  }
+  @if (live.connection() === 'offline') {
+    <p class="offline">
+      Cannot reach the engine at <span class="mono">{{ live.engine }}</span>. Start it as described in the README, or
+      pass <span class="mono">?engine=https://…</span>.
+    </p>
+  }
+
+  <cg-stat-tiles [stats]="live.stats()" [head]="live.head()" [open]="live.openBySeverity()" [now]="now()" />
+
+  <div class="grid">
+    <cg-alert-feed class="panel" [alerts]="live.alerts()" [fresh]="live.fresh()" [now]="now()" />
+    <div class="side">
+      <cg-block-stream [blocks]="live.blocks()" [reorgs]="live.reorgs()" />
+      <cg-records-chart class="panel" [blocks]="live.blocks()" />
+    </div>
+  </div>
+</main>
+
+<footer>
+  <span>Engine <span class="mono">{{ live.engine }}</span></span>
+  <span>
+    {{ live.stats()?.counters?.duplicates ?? 0 }} redeliveries ignored ·
+    {{ live.stats()?.counters?.failed_messages ?? 0 }} failed messages
+  </span>
+  <span>Detection is advisory. ChainGuard reports risk and never acts on it.</span>
+</footer>

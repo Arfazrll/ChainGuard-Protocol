@@ -1,31 +1,22 @@
-# Built things
-_Debug/
-Compiled/
+# Rust
+/target/
+**/*.rs.bk
+*.proptest-regressions
 
-# AudioCache can be rebuilt from sources
-AudioCache/
+# Local runtime state (checkpoints, JSONL output)
+/var/
+*.checkpoint.json
+# ingestd JSONL output at the repo root (test fixtures under apps/ are kept)
+/*.jsonl
 
-# Lockfile
-_OpenInEditor.lock
+# Local config with real endpoints / keys. Commit *.example.toml only.
+/config/ingestd.toml
+.env
+.env.*
 
-# User settings
-Game.agf.user
-*.crm.user
-
-# Backups
-Game.agf.bak
-backup_acsprset.spr
-
-# Memory dumps
-*.dmp
-
-# Temporary files
-# temporarily created during sprite or room background compression
-~aclzw.tmp
-# temporary, main game data, before getting packed into exe
-game28.dta
-# temporary build of the game before being moved to Compiled/ folder
-*.exe
-
-# Log files
-warnings.log
+# Editors / OS
+.idea/
+.vscode/
+*.swp
+.DS_Store
+Thumbs.db

@@ -1,0 +1,27 @@
+[package]
+name = "chainguard-ingestd"
+description = "ChainGuard ingestion daemon: quorum RPC → reorg-safe records → Redpanda"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+rust-version.workspace = true
+
+[[bin]]
+name = "chainguard-ingestd"
+path = "src/main.rs"
+
+[dependencies]
+chainguard-ingest-core.workspace = true
+chainguard-rpc.workspace = true
+anyhow.workspace = true
+clap.workspace = true
+rskafka.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+tokio = { workspace = true, features = ["rt-multi-thread", "signal", "fs", "io-std", "io-util"] }
+toml.workspace = true
+tracing.workspace = true
+tracing-subscriber.workspace = true
+
+[dev-dependencies]
+chainguard-ingest-core = { workspace = true, features = ["testkit"] }

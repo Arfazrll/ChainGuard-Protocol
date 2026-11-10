@@ -1,0 +1,113 @@
+name: ci
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+permissions:
+  contents: read
+
+env:
+  CARGO_TERM_COLOR: always
+  RUSTFLAGS: -D warnings
+
+jobs:
+  rust:
+    name: fmt · clippy · test
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+        with:
+          components: rustfmt, clippy
+      - uses: Swatinem/rust-cache@v2
+      - run: cargo fmt --all --check
+      - run: cargo clippy --workspace --all-targets --locked
+      - run: cargo test --workspace --locked --no-fail-fast
+
+  # Merge is blocked if read-only enforcement, multi-node verification or the
+  # reorg suite is removed, weakened or bypassed (brief §1, §16).
+  invariants:
+    name: invariants (read-only · multi-node · reorg)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29"
+          elixir-version: "1.20"
+      - run: mix deps.get
+        working-directory: apps/engine
+      - run: scripts/check-invariants.sh
+
+  # Milestone-1 acceptance: a reorg on a real test chain retracts and
+  # re-emits derived state.
+  anvil-reorg:
+    name: reorg on a real test chain (anvil)
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+      - uses: foundry-rs/foundry-toolchain@v1
+        with:
+          version: stable
+      - name: start anvil
+        run: |
+          anvil --port 8545 --silent &
+          for i in $(seq 1 30); do
+            curl -sf -X POST -H 'content-type: application/json' \
+              --data '{"jsonrpc":"2.0","id":1,"method":"eth_chainId","params":[]}' \
+              http://127.0.0.1:8545 && break
+            sleep 1
+          done
+      - run: cargo test -p chainguard-rpc --test anvil_reorg --locked -- --ignored
+        env:
+          CHAINGUARD_ANVIL_URL: http://127.0.0.1:8545
+
+  # Detection engine: rules, alerting, Broadway pipeline, and the replay of
+  # real historical incidents (test/fixtures/incidents) as regression tests.
+  engine:
+    name: engine (Elixir) · incident replay
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/engine
+    env:
+      MIX_ENV: test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: erlef/setup-beam@v1
+        with:
+          otp-version: "29"
+          elixir-version: "1.20"
+      - uses: actions/cache@v4
+        with:
+          path: |
+            apps/engine/deps
+            apps/engine/_build
+          key: mix-${{ runner.os }}-${{ hashFiles('apps/engine/mix.lock') }}
+      - run: mix deps.get
+      - run: mix format --check-formatted
+      - run: mix compile --warnings-as-errors
+      - run: mix test
+
+  dashboard:
+    name: dashboard (Angular)
+    runs-on: ubuntu-24.04
+    defaults:
+      run:
+        working-directory: apps/dashboard
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          cache: npm
+          cache-dependency-path: apps/dashboard/package-lock.json
+      - run: npm ci
+      - run: npx ng build
+      - run: npx ng test --watch=false

@@ -1,0 +1,46 @@
+# ChainGuard ingestion — Ethereum mainnet over two independent public RPCs.
+# Copy to config/ingestd.toml and adjust. Run: cargo run -p chainguard-ingestd -- -c config/ingestd.toml
+
+chain_id = 1
+chain_name = "ethereum-mainnet"
+
+# A block is final once it is this many blocks deep (~2 epochs on PoS
+# Ethereum). Records are emitted immediately as *provisional* and are
+# retracted if a reorg orphans their block before then.
+confirmations = 64
+poll_interval_ms = 2000
+request_timeout_ms = 10000
+# start_block = 21000000   # omit to start at the current head
+
+# Top-level keys must come before any [table] in TOML.
+labels = "data/labels/ethereum-mainnet.json"
+checkpoint = "var/ingestd-ethereum-mainnet.checkpoint.json"
+
+# Never trust a single node: every head, header and log set must be returned
+# identically by at least `min_agreement` nodes (a strict majority).
+[quorum]
+min_agreement = 2
+allow_single_source = false
+
+# Use independent providers. Keep API keys out of this file: `url_env` reads
+# the URL from an environment variable injected by your secret store.
+[[nodes]]
+id = "publicnode"
+url = "https://ethereum-rpc.publicnode.com"
+
+[[nodes]]
+id = "drpc"
+url = "https://eth.drpc.org"
+
+# [[nodes]]
+# id = "alchemy"
+# url_env = "CHAINGUARD_ALCHEMY_URL"
+
+[sink]
+kind = "jsonl"
+path = "-"
+
+# [sink]
+# kind = "kafka"
+# brokers = ["localhost:19092"]
+# topic = "chainguard.ingest.v1.ethereum-mainnet"

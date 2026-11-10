@@ -1,0 +1,26 @@
+id: flash-loan-drain
+version: 1
+name: Protocol drained inside a flash-loan transaction
+severity: critical
+weakness:
+  class: flash-loan-attack
+  refs: ["OWASP-SC07:2025 Flash Loan Attacks", "OWASP-SC02:2025 Price Oracle Manipulation"]
+description: >
+  One transaction takes a flash loan and a labeled lending, DEX, bridge or
+  protocol contract ends it with a large *net* USD outflow. Net, not gross:
+  the flash-loan lender's own principal leaves and returns, so it never
+  counts. This is the shape of the Euler Finance exploit (March 2023).
+scope: tx
+require:
+  - name: loan
+    match: { kind: flash_loan }
+  - name: drain
+    net_outflow:
+      party_category: [lending, dex, bridge, protocol, stablecoin]
+      gte_usd: 1000000
+evidence: [loan, drain]
+title: "{{drain.name}} net outflow {{drain.value_usd|usd}} in flash-loan tx {{tx_hash|short}}"
+dedup:
+  key: "{{tx_hash}}"
+  window_seconds: 86400
+rate_limit: { per_minute: 5 }
